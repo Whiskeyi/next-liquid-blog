@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Whiskeyi's Blog</title>
+  <desc id="desc">A minimal liquid monogram icon.</desc>
+  <defs>
+    <linearGradient id="bg" x1="20" y1="12" x2="108" y2="116" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#10282c" />
+      <stop offset="0.54" stop-color="#0d171a" />
+      <stop offset="1" stop-color="#050709" />
+    </linearGradient>
+    <radialGradient id="glow" cx="36" cy="20" r="96" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#74f1e5" stop-opacity="0.48" />
+      <stop offset="0.42" stop-color="#1b8a8f" stop-opacity="0.18" />
+      <stop offset="1" stop-color="#1b8a8f" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="mark" x1="30" y1="28" x2="96" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f5df92" />
+      <stop offset="0.34" stop-color="#f7fbf8" />
+      <stop offset="0.72" stop-color="#62c6c1" />
+      <stop offset="1" stop-color="#1b8a8f" />
+    </linearGradient>
+    <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="150%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000000" flood-opacity="0.28" />
+    </filter>
+  </defs>
+  <rect width="128" height="128" rx="30" fill="url(#bg)" />
+  <rect x="1" y="1" width="126" height="126" rx="29" fill="url(#glow)" />
+  <path
+    d="M40 40H88L50 88H90"
+    fill="none"
+    stroke="url(#mark)"
+    stroke-width="12"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    filter="url(#soft-shadow)"
+  />
+  <rect x="7.5" y="7.5" width="113" height="113" rx="24" fill="none" stroke="#ffffff" stroke-opacity="0.1" />
+</svg>

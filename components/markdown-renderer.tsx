@@ -4,13 +4,14 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypePrettyCode from "rehype-pretty-code";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
-import rehypeSlug from "rehype-slug";
 import { CodeBlock } from "@/components/code-block";
 import { ImageWithZoom } from "@/components/image-with-zoom";
+import { createHeadingIdRegistry } from "@/lib/heading-ids";
 import { normalizeAssetPath } from "@/lib/posts";
 
 type MarkdownRendererProps = {
   content: string;
+  slug: string;
 };
 
 const sanitizeSchema = {
@@ -26,7 +27,40 @@ const sanitizeSchema = {
   }
 };
 
-export async function MarkdownRenderer({ content }: MarkdownRendererProps) {
+type HastNode = {
+  type?: string;
+  tagName?: string;
+  value?: string;
+  properties?: Record<string, unknown>;
+  children?: HastNode[];
+};
+
+function getTextContent(node: HastNode): string {
+  if (node.type === "text") return node.value ?? "";
+  return node.children?.map(getTextContent).join("") ?? "";
+}
+
+function visitNodes(node: HastNode, visitor: (node: HastNode) => void) {
+  visitor(node);
+  node.children?.forEach((child) => visitNodes(child, visitor));
+}
+
+function rehypeHeadingIds() {
+  return (tree: HastNode) => {
+    const idRegistry = createHeadingIdRegistry();
+
+    visitNodes(tree, (node) => {
+      if (!/^h[1-6]$/.test(node.tagName ?? "")) return;
+
+      node.properties = {
+        ...node.properties,
+        id: idRegistry.getId(getTextContent(node))
+      };
+    });
+  };
+}
+
+export async function MarkdownRenderer({ content, slug }: MarkdownRendererProps) {
   return (
     <div className="markdown-body">
       <MarkdownAsync
@@ -34,7 +68,7 @@ export async function MarkdownRenderer({ content }: MarkdownRendererProps) {
         rehypePlugins={[
           rehypeRaw,
           [rehypeSanitize, sanitizeSchema],
-          rehypeSlug,
+          rehypeHeadingIds,
           [
             rehypeAutolinkHeadings,
             {
@@ -74,7 +108,7 @@ export async function MarkdownRenderer({ content }: MarkdownRendererProps) {
           img({ src, alt, node, ...props }) {
             const dataSrc = node?.properties?.dataSrc ?? node?.properties?.["data-src"];
             const imageSrc = typeof src === "string" ? src : typeof dataSrc === "string" ? dataSrc : "";
-            return <ImageWithZoom src={normalizeAssetPath(imageSrc)} alt={alt ?? ""} {...props} />;
+            return <ImageWithZoom src={normalizeAssetPath(imageSrc, slug)} alt={alt ?? ""} {...props} />;
           },
           pre({ children, ...props }) {
             return <CodeBlock {...props}>{children}</CodeBlock>;

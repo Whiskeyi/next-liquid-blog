@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Code2 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { glassStyle } from "@/components/glass-style";
-import { siteConfig } from "@/lib/site";
+import { siteConfig, withBasePath } from "@/lib/site";
 
 const navItems = [
   { href: "/", label: "首页" },
@@ -20,8 +20,9 @@ export function SiteHeader() {
     <header className="site-header">
       <nav className="glass-nav" style={glassStyle} aria-label="主导航">
         <Link className="brand" href="/" aria-label={`${siteConfig.name} 首页`}>
-          <span className="brand-mark">Z</span>
-          <span>{siteConfig.name}</span>
+          <span className="brand-mark" aria-hidden="true">
+            <img src={withBasePath("/img/signature/signature.png")} alt="" />
+          </span>
         </Link>
         <div className="nav-links">
           {navItems.map((item) => {

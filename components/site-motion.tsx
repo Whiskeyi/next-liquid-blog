@@ -1,0 +1,65 @@
+"use client";
+
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+export function SiteMotion() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) return;
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const context = gsap.context(() => {
+      gsap.fromTo(
+        ".glass-nav",
+        { y: -18, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }
+      );
+
+      gsap.utils
+        .toArray<HTMLElement>(
+          ".section-heading, .archive-overview, .archive-year, .about-hero, .about-timeline-head, .article-hero-content, .article-toc, .article-content"
+        )
+        .forEach((element) => {
+          gsap.fromTo(
+            element,
+            { y: 18, opacity: 0 },
+            {
+              y: 0,
+              opacity: 1,
+              duration: 0.42,
+              ease: "power2.out",
+              scrollTrigger: {
+                trigger: element,
+                start: "top 88%",
+                once: true
+              }
+            }
+          );
+        });
+
+      ScrollTrigger.batch(".archive-item", {
+        start: "top 92%",
+        once: true,
+        onEnter: (batch) => {
+          gsap.fromTo(
+            batch,
+            { y: 16, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.38, ease: "power2.out", stagger: 0.03 }
+          );
+        }
+      });
+    });
+
+    return () => {
+      context.revert();
+    };
+  }, [pathname]);
+
+  return null;
+}

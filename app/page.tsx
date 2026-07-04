@@ -1,15 +1,21 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { HeroCarousel } from "@/components/hero-carousel";
+import { HomeMotion } from "@/components/home-motion";
 import { PostFeed } from "@/components/post-feed";
 import { getAllPosts, getAllTags } from "@/lib/posts";
 import { siteConfig } from "@/lib/site";
 
 const heroImages = [
-  "/img/header_img/4.jpg",
-  "/img/header_img/39.jpg",
   "/img/header_img/27.jpg",
-  "/img/header_img/16.jpg"
+  "/img/header_img/23.jpg",
+  "/img/header_img/4.jpg",
+  "/img/header_img/11.jpg",
+  "/img/header_img/24.jpg",
+  "/img/header_img/25.jpg",
+  "/img/header_img/33.jpg",
+  "/img/header_img/39.jpg",
+  "/img/header_img/43.jpg",
 ];
 
 export default function HomePage() {
@@ -20,6 +26,7 @@ export default function HomePage() {
   return (
     <main>
       <section className="home-hero">
+        <HomeMotion />
         <div className="hero-content">
           <div className="hero-grid">
             <figure className="hero-visual" aria-label="抽象玻璃建筑主视觉">

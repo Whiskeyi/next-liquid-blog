@@ -2,6 +2,10 @@
 
 A clean, static Next.js blog for long-form technical notes and reading-focused publishing.
 
+Suggested GitHub repository description:
+
+> A static Next.js blog for technical notes, reading-focused essays, and GitHub Pages publishing.
+
 ## Stack
 
 - Next.js App Router with static export
@@ -11,14 +15,62 @@ A clean, static Next.js blog for long-form technical notes and reading-focused p
 
 ## Commands
 
+Use Node.js 22, matching the GitHub Pages workflow.
+
 ```bash
+nvm use
 pnpm install
+pnpm new:post
 pnpm dev
 pnpm build
 ```
 
 `pnpm build` writes the static site to `out/`.
 
+## Content
+
+Each article lives in its own folder under `content/posts`:
+
+```text
+content/posts/my-post-slug/
+  index.md
+  imgs/
+    head.jpg
+    example.png
+```
+
+Use paths like `imgs/example.png` in markdown and `header-img: imgs/head.jpg` in frontmatter. The source images stay beside the article; `pnpm dev` and `pnpm build` sync them to `public/post-assets` so the static export can serve them.
+
+Create a new article template with:
+
+```bash
+npm run new:post
+# or
+pnpm new:post
+```
+
+You can also skip the prompts:
+
+```bash
+npm run new:post -- --title "我的文章" --slug 2026-07-05-my-post --tags React,Next.js --categories Frontend
+# or
+pnpm new:post -- --title "我的文章" --slug 2026-07-05-my-post --tags React,Next.js --categories Frontend
+```
+
+The command creates `content/posts/<slug>/index.md` and `content/posts/<slug>/imgs/`. Copy the article body into `index.md`, then copy images into `imgs/` and reference them as `imgs/example.png`.
+
 ## GitHub Pages
 
-For a user site such as `Whiskeyi.github.io`, publish the `out/` folder directly. For a project page, set `GITHUB_PAGES=true` during build so the repository name is applied as `basePath`.
+This repository includes `.github/workflows/deploy.yml`. After pushing to `Whiskeyi/next-liquid-blog`, enable Pages in the repository settings:
+
+1. Go to `Settings` -> `Pages`.
+2. Set `Source` to `GitHub Actions`.
+3. Push to the `main` branch.
+
+The workflow installs dependencies with pnpm, runs `pnpm build`, uploads `out/`, and deploys it to GitHub Pages. For a project page such as `https://whiskeyi.github.io/next-liquid-blog/`, the build uses the repository name as the `basePath`.
+
+The repository currently includes `public/CNAME` for `blog.zhuchj.com`. Keep it only if that custom domain is configured for this Pages site; otherwise remove `public/CNAME` before deploying to the default GitHub Pages URL.
+
+## License
+
+Licensed under the Apache License, Version 2.0. See [LICENSE](./LICENSE).

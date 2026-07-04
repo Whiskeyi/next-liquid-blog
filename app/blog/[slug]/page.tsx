@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarDays, Clock3, Eye, Hash } from "lucide-react";
@@ -23,6 +24,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!post) return {};
 
+  const coverUrl = post.hasCover ? new URL(post.cover, siteConfig.url).toString() : undefined;
+
   return {
     title: post.title,
     description: post.excerpt,
@@ -36,7 +39,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       url: getAbsolutePostUrl(post.slug),
       publishedTime: post.date,
       authors: [siteConfig.author],
-      tags: post.tags
+      tags: post.tags,
+      images: coverUrl ? [{ url: coverUrl }] : undefined
     }
   };
 }
@@ -48,11 +52,24 @@ export default async function BlogPostPage({ params }: PageProps) {
   if (!post) notFound();
 
   const labels = Array.from(new Set([...post.categories, ...post.tags]));
+  const heroClassName = ["article-hero", post.hasCover ? "article-hero-with-cover" : "article-hero-no-cover"].join(" ");
 
   return (
     <main>
       <article>
-        <header className="article-hero">
+        <header className={heroClassName} data-cover-orientation={post.coverOrientation}>
+          {post.hasCover ? (
+            <figure className="article-hero-image" aria-label={`${post.title} 封面图`}>
+              <Image
+                src={post.cover}
+                alt=""
+                fill
+                priority
+                loading="eager"
+                sizes="(max-width: 760px) calc(100vw - 36px), (max-width: 1120px) 42vw, 470px"
+              />
+            </figure>
+          ) : null}
           <div className="article-hero-content">
             <Link className="back-link" href="/">
               <ArrowLeft size={17} />
@@ -91,7 +108,7 @@ export default async function BlogPostPage({ params }: PageProps) {
         <div className="article-layout">
           <ArticleToc headings={post.headings} />
           <div className="article-content">
-            <MarkdownRenderer content={post.content} />
+            <MarkdownRenderer content={post.content} slug={post.slug} />
           </div>
         </div>
         <ArticleReadingTools headings={post.headings} />

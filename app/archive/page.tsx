@@ -13,7 +13,7 @@ export default function ArchivePage() {
   const total = years.reduce((sum, year) => sum + groups[year].length, 0);
 
   return (
-    <main className="page-shell inner-page">
+    <main className="page-shell inner-page archive-page">
       <section className="section-heading">
         <span>Archive</span>
         <h1>归档</h1>

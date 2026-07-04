@@ -10,19 +10,19 @@ export const metadata = {
 const workTimeline = [
   {
     period: "2026.01 - 至今",
-    title: "全栈开发工程师",
+    title: "全栈开发",
     company: "阿里巴巴集团 · 淘宝闪购",
-    points: ["参与零售业务研发、AI Coding平台建设与FDE实际"]
+    points: ["参与零售业务研发、AI Coding平台建设与FDE实践"]
   },
   {
     period: "2023.06 - 2026.01",
-    title: "前端开发工程师",
+    title: "前端开发",
     company: "阿里云智能集团 · Quick BI",
-    points: ["参与数据产品前端研发、复杂多维表格、智能化能力建设与工程化优化"]
+    points: ["参与数据产品前端研发，包括复杂多维表格、AI智能问数与工程化优化"]
   },
   {
     period: "2022.06 - 2022.12",
-    title: "前端开发实习生",
+    title: "前端开发实习",
     company: "网易（杭州）网络有限公司",
     points: ["参与 C 端活动页与后台系统研发"]
   }
@@ -33,7 +33,7 @@ export default function AboutPage() {
     <main className="about-page">
       <section className="about-hero">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={withBasePath("/img/header_img/IMG_0978.JPG")} alt="" />
+        <img src={withBasePath("/img/header_img/45.jpg")} alt="" />
         <div className="about-copy">
           <span>About</span>
           <h1>{siteConfig.author}</h1>

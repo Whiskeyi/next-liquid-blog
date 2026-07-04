@@ -2,8 +2,22 @@ import type { Metadata, Viewport } from "next";
 import { BackToTop } from "@/components/back-to-top";
 import { ReadingProgress } from "@/components/reading-progress";
 import { SiteHeader } from "@/components/site-header";
-import { siteConfig } from "@/lib/site";
+import { SiteMotion } from "@/components/site-motion";
+import { siteConfig, withBasePath } from "@/lib/site";
 import "./globals.css";
+
+const themeInitScript = `
+(() => {
+  try {
+    const stored = window.localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const theme = stored === "dark" || (!stored && prefersDark) ? "dark" : "light";
+    document.documentElement.dataset.theme = theme;
+  } catch {
+    document.documentElement.dataset.theme = "light";
+  }
+})();
+`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -13,6 +27,10 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   authors: [{ name: siteConfig.author }],
+  icons: {
+    icon: [{ url: withBasePath("/favicon.svg"), type: "image/svg+xml" }],
+    shortcut: withBasePath("/favicon.svg")
+  },
   openGraph: {
     type: "website",
     locale: "zh_CN",
@@ -36,9 +54,13 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="zh-CN" suppressHydrationWarning>
+    <html lang="zh-CN" data-scroll-behavior="smooth" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body>
         <ReadingProgress />
+        <SiteMotion />
         <SiteHeader />
         {children}
         <BackToTop />

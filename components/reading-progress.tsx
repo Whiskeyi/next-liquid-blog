@@ -1,15 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export function ReadingProgress() {
-  const [progress, setProgress] = useState(0);
+  const progressRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function updateProgress() {
+      const progressElement = progressRef.current;
+
+      if (!progressElement) {
+        return;
+      }
+
       const scrollTop = window.scrollY;
       const height = document.documentElement.scrollHeight - window.innerHeight;
-      setProgress(height > 0 ? Math.min(100, (scrollTop / height) * 100) : 0);
+      const progress = height > 0 ? Math.min(100, (scrollTop / height) * 100) : 0;
+
+      progressElement.style.transform = `scaleX(${progress / 100})`;
     }
 
     updateProgress();
@@ -22,5 +30,5 @@ export function ReadingProgress() {
     };
   }, []);
 
-  return <div className="reading-progress" style={{ transform: `scaleX(${progress / 100})` }} />;
+  return <div ref={progressRef} className="reading-progress" style={{ transform: "scaleX(0)" }} />;
 }

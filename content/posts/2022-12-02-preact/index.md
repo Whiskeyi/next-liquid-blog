@@ -1,0 +1,399 @@
+---
+title: Preact
+catalog: true
+date: 2022-12-02 00:04:27
+subtitle: React VS Preact
+tags:
+  - React
+categories:
+  - React
+---
+
+# Preact
+
+## 介绍
+
+**Rreact：**带来了很多全新的概念如：JSX、virtual-dom、组件化、合成事件
+
+**P（Performance）react**：React轻量级替代方案
+
+学习了解Preact，能够从原理上进一步了解React
+
+![image-20221130155005229](imgs/image-20221130155005229.png)
+
+链接：https://preactjs.com/
+
+（Fast 3kB alternative to React with the same modern API）
+
+案例：Taro v3.4开始支持PReact，与 React 接近 **100k** 的体积相比，它的体积只有 **3k** 左右。在小程序严格的体积要求下，使用 Preact 省下的大量空间则显得弥足珍贵。
+
+
+
+## 特点
+
+### 更靠近DOM（Closer to the DOM）
+
+Preact在DOM之上提供了可能是最薄的虚拟DOM抽象，将真实DOM区分，注册真实的事件处理函数，能与其他库很好地一起工作。
+
+### 小体积 - 3KB（Small Size）
+
+大多数UI框架相当大，占据应用程序js代码的大部分。Preact不同：它足够小，这使得你的业务代码是应用程序的最大部分。Preact的bundle在gzip下大概3kb，比react小很多。
+这意味着下载、解析和执行的JavaScript更少 - 可以有效提升应用性能和体验
+
+### 高性能（Big Performance）
+
+Preact速度很快，不仅仅是因为它的大小。它是目前最快的虚拟DOM库之一。，也得益于一个简单且可预测的diff实现。
+做到自动批量更新，并们与浏览器工程师密切合作，在性能方面将PReact调到极致。
+
+### 便携&嵌入式（Portable & Embeddable）
+
+Preact体积很小，这意味着您可以将强大的虚拟DOM组件范例带到其他地方。
+使用Preact构建应用程序的部分，而无需复杂的集成。将Preact嵌入到小部件中，应用与构建完整应用程序。
+
+### 易于开发和生产（Instantly Productive）
+
+不需要牺牲生产力的前提，preact包含了有一些额外而便捷的功能以使得开发更简单高效，如：
+1. props, state 和 context 可以被传递给 render()
+2. 可使用标准的 HTML 属性，如 class 和 for
+
+### 生态能力(Ecosystem Compatible)
+
+可以无缝使用 React 生态系统中可用的数千个组件。增加一个简单的兼容层 preact-compat 到绑定库中，甚至可以在系统中使用非常复杂的 React 组件。
+
+......
+
+
+
+
+## 与React区别
+
+### Preact 并未完全实现React的每个特性
+
+Preact 本身没有去重新实现一遍 React。它们有一些不同之处。大部份的不同都很细微，且可以完全通过 [preact-compat](https://github.com/developit/preact-compat) 去掉。
+
+### 版本迭代
+
+当新特性被React团队公布后，Preact团队会考虑到项目目标如果非常合理，符合项目目标的React特性才会被添加到Preact
+
+
+
+## 具体实现
+
+### JSX
+
+如何在`JS`中来描述`DOM`结构?
+
+可以通过浏览器的操作`DOM`的API来完成，或者封装成一个**工厂函数(h)**来进行接收一定的输入，输出就是相应的`DOM`，如：
+
+```javascript
+h("a", {
+  class: "click",
+  href: "#",
+  onclick: function onclick(e) {
+    alert('you are 1,000,000th visitor!');
+    e.preventDefault();
+  }
+}, "click here to win a prize");
+```
+
+但是这样对于开发者来说太不友好了，如果React按照这样实现，应该也不会发展到现状。我们习惯的是通过一个类似HTML的结构来描述页面的DOM结构，于是便有了JSX
+
+**JSX => 工厂函数（h） => 原生`DOM`的结构**
+
+原来从`JSX`转化到函数调用这个阶段是由`React`团队提供的，后面因为`babel`做的更好，更强大，就逐渐演变成了`@babel/plugin-transform-react-jsx`这个核心插件
+
+[Babel转换](https://babeljs.io/repl/#?browsers=&build=&builtIns=false&corejs=3.21&spec=false&loose=true&code_lz=PQKhAIAECsGcA9wAtwmAKHQHgGYHs9xgA-Abk1wPACMBDAJwF4AiOgL2fDwDsBTRgN4BGAL5EyFAK4AbYunDgs0gJbEA8nyzAVchUtUAVAO54tO7MBkSKtdAEgAxtNqxYLJ8ocBrTknq8cFgBiZnseD29BHEluBwAXZR4ACl4ASnABeQVwO1ppXno4pIByAE88SXAGXnAhABoABibGpriUADdlWGU4vHoAQmLUrIU7XgA6AAd_dt5uOIARANoZIuHs8BERdF1wCK9kApre8CNlbirwaeU2XgtaYiA&debug=false&forceAllTransforms=false&shippedProposals=false&circleciRepo=&evaluate=false&fileSize=false&timeTravel=false&sourceType=module&lineWrap=true&presets=react%2Ces2015-loose&prettier=false&targets=&version=7.20.6&externalPlugins=&assumptions=%7B%7D)
+
+### Vritual DOM
+
+工厂函数（h）的输出就是用来描述DOM结构的Virtual DOM（使用对象类型来描述树状结构）
+
+快？合并DOM更新、跨平台
+
+```html
+<p class="big">Hello World!</p>
+```
+
+```javascript
+// virtual DOM
+let vdom = {
+  type: 'p',         // a <p> element
+  props: {
+    class: 'big',    // with class="big"
+    children: [
+      'Hello World!' // and the text "Hello World!"
+    ]
+  }
+}
+```
+
+### Event
+
+**React**：实现了合成事件
+
+**Preact**：没有事件合成系统，它直接使用的是由浏览器原生提供的事件系统，体积更小。类似React，通过驼峰Prop定义
+
+```jsx
+function clicked() {
+  console.log('clicked')
+}
+const myButton = document.getElementById('my-button')
+myButton.addEventListener('click', clicked)
+
+function clicked() {
+  console.log('clicked')
+}
+<button onClick={clicked}>
+```
+### Diff、组件化、生命周期...
+
+### Hooks（主要介绍）
+
+`hook`在`Preact`中是通过`preact/hook`内一个模块单独引入的。这个模块中有两个重要的模块内的全局变量：
+
+1、`currentIndex`：用于记录当前函数组件正在使用的 hook 的顺序。
+
+2、`currentComponent`。用于记录当前渲染对应的组件。
+
+
+
+### options
+
+`Preact hook` 的实现是通过暴露在`Preact.options`中的几个钩子函数在`Preact`的相应初始/更新时候执行相应的`hook`逻辑。这几个钩子分别是`_render`=>`diffed`=>`_commit`=>`umount`
+
+1. _render：
+
+>  进行每次 render 的初始化操作。包括执行/清理上次未处理完的 effect、初始化 hook 下标为 0、取得当前 render 的组件实例。
+
+2. diffed
+
+> vnode 的 diff 完成之后，将当前的`_pendingEffects`推进执行队列，让它在下一帧绘制前执行
+
+3. _commit
+
+> 初始或者更新 render 结束之后执行`_renderCallbacks`(在`preact`中指每次 render 后，同步执行的操作回调列表，例如`setState`的第二个参数 cb、或者一些`render`后的生命周期函数、或者`forceUpdate`的回调)
+
+4. unmount
+
+> 组件的卸载之后执行`effect`的清理操作
+
+
+
+### 组件状态
+
+对于组件来说加入的 hook 只是在 preact 的组件基础上增加一个__hook 属性，因此函数组件是无状态的，hooks让它变成了有状态。
+
+```typescript
+export interface ComponentHooks {
+	/** The list of hooks a component uses */
+	_list: HookState[];
+	/** List of Effects to be invoked after the next frame is rendered */
+	_pendingEffects: EffectHookState[];
+}
+
+export interface Component extends PreactComponent<any, any> {
+	__hooks?: ComponentHooks;
+}
+```
+
+
+
+`getHookState`函数在每次执行`useXxx`的时候，首先执行这个函数获取 hook 的状态的。
+
+```javascript
+function getHookState(index) {
+  if (options._hook) options._hook(currentComponent);
+  const hooks =
+    currentComponent.__hooks ||
+    (currentComponent.__hooks = { _list: [], _pendingEffects: [] });
+
+  // 初始化的时候，创建一个空的hook
+  if (index >= hooks._list.length) {
+    hooks._list.push({});
+  }
+  return hooks._list[index];
+}
+```
+
+
+
+`currentIndex`在每一次的`render`过程中是从 0 开始的，每执行一次`useXxx`后加一。每个`hook`在多次`render`中对于记录前一次的执行状态是通过`currentComponent.__hooks`中的顺序决定。所以如果处于条件语句，如果某一次条件不成立，导致那个`useXxx`没有执行，这个后面的 hook 的顺序就会发生错乱。
+
+
+
+第一次渲染后，`__hooks = [hook1,hook2,hook3]`。 第二次渲染，由于`const [state2, setState2] = useState();`被跳过，通过`currentIndex`取到的`const [state3, setState3] = useState();`其实是`hook2`。
+
+```JavaScript
+const Component = () => {
+  const [state1, setState1] = useState();
+  // 假设condition第一次渲染为true，第二次渲染为false
+  if (condition) {
+    const [state2, setState2] = useState();
+  }
+  const [state3, setState3] = useState();
+};
+```
+
+
+
+### PReact Hooks源码
+
+将主要开发场景下的hooks分为三类
+
+#### MemoHookState 
+
+`useMemo` 、`useCallback`、`useRef`
+
+```javascript
+export function useMemo(factory, args) {
+  // 当前hook状态
+	const state = getHookState(currentIndex++, 7);
+  // 判断依赖项是否改变
+	if (argsChanged(state._args, args)) {
+    // 存储本次数据值
+		state._pendingValue = factory();
+		state._pendingArgs = args;
+		state._factory = factory;
+		return state._pendingValue;
+	}
+	return state._value;
+}
+
+export function useCallback(callback, args) {
+	currentHook = 8;
+	return useMemo(() => callback, args);
+}
+
+export function useRef(initialValue) {
+	currentHook = 5;
+	return useMemo(() => ({ current: initialValue }), []);
+}
+// 为什么要有current？
+```
+
+`useCallback`可以看作`useMemo`的语法糖
+
+![image-20221201170454732](imgs/image-20221201170454732.png)
+
+ #### ReducerHookState
+
+ `useReducer` 、`useState` 
+
+useReducer和redux很像
+
+`useState`其实只是传特定`reducer`的`useReducer`一种实现。
+
+```javascript
+export function useState(initialState) {
+	currentHook = 1;
+	return useReducer(invokeOrReturn, initialState);
+}
+
+/**
+ *  function invokeOrReturn(arg, f) {
+ *		return typeof f == 'function' ? f(arg) : f;
+ *	}
+**/
+
+export function useReducer(reducer, initialState, init) {
+	const hookState = getHookState(currentIndex++);
+	if (!hookState._component) {
+		hookState._component = currentComponent;
+
+		hookState._value = [
+			!init ? invokeOrReturn(undefined, initialState) : init(initialState),
+			action => {
+				const nextValue = reducer(hookState._value[0], action);
+				if (hookState._value[0] !== nextValue) {
+					hookState._value[0] = nextValue;
+					hookState._component.setState({});
+				}
+			}
+		];
+	}
+  // ...
+	return hookState._value;
+}
+```
+
+
+
+
+#### EffectHookState
+
+`useLayoutEffect` 、`useEffect`
+
+`useEffect` 的 callback 执行是在本次渲染结束之后，下次渲染之前执行
+
+`useLayoutEffect`是在本次会在浏览器 layout 之后，painting 之前执行(阻塞视图更新，避免闪烁问题)，是同步的
+
+`_pendingEffects`是本次重绘之后，下次重绘之前执行。`options.differed` 钩子中（即组件 diff 完成后），执行`afterPaint(afterPaintEffects.push(c))`将含有`_pendingEffects`的组件推进全局的`afterPaintEffects`队列
+
+`_renderCallbacks`是在`_commit`钩子中执行的，renderCallback 就是 render 后的回调，此时 DOM 已经更新完，浏览器还没有 paint 新一帧
+
+```javascript
+export function useEffect(callback, args) {
+	const state = getHookState(currentIndex++, 3);
+	if (!options._skipEffects && argsChanged(state._args, args)) {
+		state._value = callback;
+		state._pendingArgs = args;
+
+		currentComponent.__hooks._pendingEffects.push(state);
+	}
+}
+
+export function useLayoutEffect(callback, args) {
+	const state = getHookState(currentIndex++, 4);
+	if (!options._skipEffects && argsChanged(state._args, args)) {
+		state._value = callback;
+		state._pendingArgs = args;
+
+		currentComponent._renderCallbacks.push(state);
+	}
+}
+```
+
+
+
+`useContext`
+
+```javascript
+export function useContext(context) {
+  // 每个Preact组件的context属性都保存着当前全局context的Provider引用，不同的context都有一个唯一id。获取当前组件的Context Provider
+	const provider = currentComponent.context[context._id];
+	const state = getHookState(currentIndex++, 9);
+	state._context = context;
+	if (!provider) return context._defaultValue;
+	if (state._value == null) {
+    // 初始化时订阅当前组件Provider的value变化
+    // 当Provider的value变化时，重新渲染当前组件
+		state._value = true;
+		provider.sub(currentComponent);
+	}
+	return provider.props.value;
+}
+```
+
+
+
+## Demo
+
+https://github.com/Whiskeyi/React-PReact
+
+
+
+## 分析总结
+
+首先不可否认的是Preact是一个优秀的框架，我们可以考虑在开发中使用它，但是需要注意一下几个方面：
+
+### 稳定性
+
+React的稳定性已得到多个项目以及数十亿用户的验证，故建议新启的项目，特别是活动页，移动端页面可以使用Preact,而原有的React项目，尤其是大型项目，在引入Preact的时候需要进行足够的验证，测试以保证项目的稳定性。
+
+###react自身的不断优化
+
+随着版本的迭代，react自身也在性能，开发模式上做了很多优化，如：react重大更新版本react16在加载时间上相比react15减少了接近1/3，已经在慢慢接近Preact。
+
+### 弄清楚性能瓶颈到底是什么
+
+应用的加载速度慢真的是由于React框架过大吗？如果不是，那就没有必要去改用Preact。因花更多的时间去解决更关键的问题，而不是花在各种使用替换方案和解决其兼容性上。

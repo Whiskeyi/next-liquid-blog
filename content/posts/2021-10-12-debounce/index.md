@@ -1,0 +1,264 @@
+---
+title: 防抖(debounce)&节流(throttle)
+header-img: imgs/head.jpg
+catalog: true
+date: 2021-10-12 21:41:43
+subtitle: JS
+tags:
+  - JS
+categories:
+  - JS
+---
+
+<!-- toc -->
+
+## 防抖(debounce)&节流(throttle)
+
+### 什么是防抖和节流？
+
+#### 防抖(debounce)
+
+&emsp;&emsp;当调用动作 n 毫秒后，才会执行该动作，若在这 n 毫秒内又调用此动作则将重新计算执行时间。
+&emsp;&emsp;理解：持续触发不执行，不触发的一段时间之后才执行。
+
+#### 节流(throttle)
+
+&emsp;&emsp;预先设定一个执行周期，当调用动作的时刻大于等于执行周期则执行该动作，然后进入下一个新周期。
+&emsp;&emsp;理解：隔一定执行周期（时间）触发一次事件。
+
+### 业务场景
+
+#### debounce
+
+1.`scroll`事件（资源的加载） 2.`mousemove`事件（拖拽） 3.`resize`事件（响应式布局样式） 4.`keyup`事件（输入框文字停止打字后才进行校验）
+
+#### throttle
+
+1.`click`事件（不停快速点击按钮，减少触发频次） 2.`scroll`事件（返回顶部按钮出现\隐藏事件触发） 3.`keyup`事件（输入框文字与显示栏内容复制同步） 4.减少发送`ajax`请求，降低请求频率
+
+### 案例分析
+
+&emsp;&emsp;下面来看一个案例，我们为实现输入框文字和显示栏内容同步，给 id 为 num 的 `input` 对象添加监听事件，当输入框输入内容时触发监听实现，并将结果显示在 id 为 show 的 `input` 对象中。
+&emsp;&emsp;在输入框输入文字时，大量执行了操作 `DOM` 的函数（操作 DOM 是很耗费性能的），如图所示:
+![case](imgs/case.gif)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../public/css/bootstrap.min.css" />
+    <title>Document</title>
+    <style>
+      .label {
+        color: #000;
+        margin-right: 20px;
+      }
+      .inline-block {
+        display: inline-block;
+      }
+      .container {
+        margin-top: 50px;
+      }
+
+      .section {
+        margin-bottom: 100px;
+      }
+      .title {
+        margin-bottom: 50px;
+      }
+      .boxes {
+        font-size: 22px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="title text-center">Case</h1>
+      <div class="boxes">
+        <div class="form-group">
+          <label>Num</label>
+          <input type="text" class="form-control" id="num" />
+        </div>
+        <div class="form-group">
+          <label>Show</label>
+          <input
+            type="text"
+            class="form-control"
+            id="show"
+            disabled="disabled"
+          />
+        </div>
+      </div>
+    </div>
+    <script>
+      var numElmt = document.getElementById("num");
+      function myFunction() {
+        console.log(numElmt.value);
+        document.getElementById("show").value = numElmt.value;
+      }
+      numElmt.addEventListener("input", myFunction, false);
+    </script>
+  </body>
+</html>
+```
+
+### 防抖代码实现
+
+&emsp;&emsp;我们对上述代码进行防抖处理，防抖本质上是需要 `Window` 对象的 `setTimeout()`来辅助实现，延迟运行需要执行的代码，如又调用此动作则将重新计算延迟(clearTimeout)，等延迟时间(delay)完毕时执行目标代码。
+![case2](imgs/debounce.gif)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../public/css/bootstrap.min.css" />
+    <title>debounce</title>
+    <style>
+      .label {
+        color: #000;
+        margin-right: 20px;
+      }
+      .inline-block {
+        display: inline-block;
+      }
+      .container {
+        margin-top: 50px;
+      }
+
+      .section {
+        margin-bottom: 100px;
+      }
+      .title {
+        margin-bottom: 50px;
+      }
+      .boxes {
+        font-size: 22px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="title text-center">Case</h1>
+      <div class="boxes">
+        <div class="form-group">
+          <label>Num</label>
+          <input type="text" class="form-control" id="num" />
+        </div>
+        <div class="form-group">
+          <label>Show</label>
+          <input
+            type="text"
+            class="form-control"
+            id="show"
+            disabled="disabled"
+          />
+        </div>
+      </div>
+    </div>
+    <script>
+      function debounce(fn, delay) {
+        let timer = null; //闭包
+        return function () {
+          if (timer) {
+            clearTimeout(timer);
+          }
+          timer = setTimeout(fn, delay);
+        };
+      }
+      var numElmt = document.getElementById("num");
+      function myFunction() {
+        console.log(numElmt.value);
+        document.getElementById("show").value = numElmt.value;
+      }
+      numElmt.addEventListener("input", debounce(myFunction, 1000), false);
+    </script>
+  </body>
+</html>
+```
+
+### 节流代码实现
+
+&emsp;&emsp;在函数执行一次之后，让函数在指定的时间期限内不再工作，直至过了限定期限再重新执行。节流的实现方式有很多种，在此利用 setTimeout 和状态位 valid（表示当前函数是否处于工作状态）做一个简单的实现。
+![throttle](imgs/throttle.gif)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../public/css/bootstrap.min.css" />
+    <title>throttle</title>
+    <style>
+      .label {
+        color: #000;
+        margin-right: 20px;
+      }
+      .inline-block {
+        display: inline-block;
+      }
+      .container {
+        margin-top: 50px;
+      }
+
+      .section {
+        margin-bottom: 100px;
+      }
+      .title {
+        margin-bottom: 50px;
+      }
+      .boxes {
+        font-size: 22px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="title text-center">throttle</h1>
+      <div class="boxes">
+        <div class="form-group">
+          <label>Num</label>
+          <input type="text" class="form-control" id="num" />
+        </div>
+        <div class="form-group">
+          <label>Show</label>
+          <input
+            type="text"
+            class="form-control"
+            id="show"
+            disabled="disabled"
+          />
+        </div>
+      </div>
+    </div>
+    <script>
+      function throttle(fn, delay) {
+        let valid = false;
+        return function () {
+          setTimeout(() => {
+            fn();
+            valid = true;
+          }, delay);
+        };
+      }
+      var numElmt = document.getElementById("num");
+      function myFunction() {
+        console.log(numElmt.value);
+        document.getElementById("show").value = numElmt.value;
+      }
+      numElmt.addEventListener("input", throttle(myFunction, 1000), false);
+    </script>
+  </body>
+</html>
+```
+
+### 总结
+
+&emsp;&emsp;根据实际业务场景，通过对高频事件合理的利用和选择`防抖(debounce)和节流(throttle)`可以在一定程度上优化性能和提高用户体验。
