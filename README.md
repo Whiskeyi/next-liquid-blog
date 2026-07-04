@@ -1,10 +1,10 @@
 # Next Liquid Blog
 
-A static Next.js blog for technical notes, long-form reading, and GitHub Pages publishing.
+A static Next.js blog template for technical notes, long-form writing, and GitHub Pages publishing.
 
 Suggested GitHub repository description:
 
-> A static Next.js blog for technical notes, long-form reading, and GitHub Pages publishing.
+> A static Next.js blog template for technical notes, long-form writing, and GitHub Pages publishing.
 
 ## Stack
 
@@ -12,6 +12,24 @@ Suggested GitHub repository description:
 - React 19 and TypeScript
 - React Markdown with GFM, safe raw HTML, heading anchors, and Shiki highlighting
 - GitHub Pages-friendly build output
+
+## Customize
+
+Most site-level settings live in one file:
+
+```text
+lib/site.ts
+```
+
+Edit this file to change the site name, author, metadata, production URL, navigation, social links, homepage hero content, About page copy, timeline items, and hero images.
+
+Common fields to update first:
+
+- `name`, `title`, `author`, `description`, and `url`
+- `links.github` and `links.email`
+- `navigation`
+- `home.heroImages`, `home.heroTitle`, and `home.feedDescription`
+- `about.description`, `about.heroImage`, and `about.timeline`
 
 ## Commands
 
@@ -57,15 +75,21 @@ The command creates `content/posts/<slug>/index.md` and `content/posts/<slug>/im
 
 ## GitHub Pages
 
-This repository includes `.github/workflows/deploy.yml`. After pushing to `Whiskeyi/next-liquid-blog`, enable Pages in the repository settings:
+This repository includes `.github/workflows/deploy.yml`. After pushing your copy of the project, enable Pages in the repository settings:
 
 1. Go to `Settings` -> `Pages`.
 2. Set `Source` to `GitHub Actions`.
 3. Push to the `main` branch.
 
-The workflow installs dependencies with pnpm, runs `pnpm build`, uploads `out/`, and deploys it to GitHub Pages. The target production URL is `https://blog.zhuchj.com/`.
+The workflow installs dependencies with pnpm, runs `pnpm build`, uploads `out/`, and deploys it to GitHub Pages.
 
-The previous `Whiskeyi/Whiskeyi.github.io` Pages deployment should release `blog.zhuchj.com` before this repository takes over the custom domain root.
+For a project page, the workflow can infer the base path from the repository name. For a custom domain or a custom base path, add repository variables under `Settings` -> `Secrets and variables` -> `Actions`:
+
+- `NEXT_PUBLIC_SITE_URL`: the public site URL, for example `https://example.com`
+- `GITHUB_PAGES_CUSTOM_DOMAIN`: set to `true` when deploying to a custom domain
+- `GITHUB_PAGES_BASE_PATH`: optional override for the generated base path
+
+If you use a custom domain, configure it in GitHub Pages settings. You can also add a `public/CNAME` file with the domain name if your Pages setup requires it.
 
 ## License
 

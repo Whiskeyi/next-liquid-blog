@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    locale: "zh_CN",
+    locale: siteConfig.locale,
     siteName: siteConfig.name,
     title: siteConfig.title,
     description: siteConfig.description,
@@ -54,7 +54,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="zh-CN" data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html lang={siteConfig.language} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>

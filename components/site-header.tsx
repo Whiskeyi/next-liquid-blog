@@ -7,12 +7,6 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { glassStyle } from "@/components/glass-style";
 import { siteConfig, withBasePath } from "@/lib/site";
 
-const navItems = [
-  { href: "/", label: "首页" },
-  { href: "/archive", label: "归档" },
-  { href: "/about", label: "关于" }
-];
-
 export function SiteHeader() {
   const pathname = usePathname();
 
@@ -25,7 +19,7 @@ export function SiteHeader() {
           </span>
         </Link>
         <div className="nav-links">
-          {navItems.map((item) => {
+          {siteConfig.navigation.map((item) => {
             const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
 
             return (
@@ -36,7 +30,7 @@ export function SiteHeader() {
           })}
         </div>
         <div className="nav-actions">
-          <a className="icon-button" href={siteConfig.github} target="_blank" rel="noreferrer" aria-label="GitHub">
+          <a className="icon-button" href={siteConfig.links.github} target="_blank" rel="noreferrer" aria-label="GitHub">
             <Code2 size={18} />
           </a>
           <ThemeToggle />
