@@ -3,7 +3,7 @@ export const siteConfig = {
   author: "Whiskeyi",
   title: "Whiskeyi's Blog",
   description: "前端工程、React、JavaScript 与系统化学习笔记。",
-  url: process.env.NEXT_PUBLIC_SITE_URL || "https://blog.zhuchj.com/next-liquid-blog",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://blog.zhuchj.com",
   email: "zhuchjie@gmail.com",
   github: "https://github.com/Whiskeyi"
 };
