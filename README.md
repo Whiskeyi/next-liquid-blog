@@ -63,9 +63,9 @@ This repository includes `.github/workflows/deploy.yml`. After pushing to `Whisk
 2. Set `Source` to `GitHub Actions`.
 3. Push to the `main` branch.
 
-The workflow installs dependencies with pnpm, runs `pnpm build`, uploads `out/`, and deploys it to GitHub Pages. This repository includes `public/CNAME` for the custom domain `blog.zhuchj.com`, so the workflow publishes the site at the custom domain root.
+The workflow installs dependencies with pnpm, runs `pnpm build`, uploads `out/`, and deploys it to GitHub Pages. Since `Whiskeyi/Whiskeyi.github.io` already owns the custom domain root, this project page is published at `https://blog.zhuchj.com/next-liquid-blog/`.
 
-If you switch to the default project page URL, such as `https://whiskeyi.github.io/next-liquid-blog/`, remove `public/CNAME` and remove `GITHUB_PAGES_CUSTOM_DOMAIN` from the workflow.
+If you later move this project to a dedicated custom domain, set that domain in Pages and add `GITHUB_PAGES_CUSTOM_DOMAIN=true` to the workflow so the build can publish from the domain root.
 
 ## License
 

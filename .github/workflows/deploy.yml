@@ -39,8 +39,7 @@ jobs:
         run: pnpm build
         env:
           GITHUB_PAGES: true
-          GITHUB_PAGES_CUSTOM_DOMAIN: true
-          NEXT_PUBLIC_SITE_URL: https://blog.zhuchj.com
+          NEXT_PUBLIC_SITE_URL: https://blog.zhuchj.com/next-liquid-blog
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
