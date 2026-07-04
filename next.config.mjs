@@ -1,10 +1,26 @@
 const repoName = process.env.GITHUB_REPOSITORY?.split("/")[1];
+const hasCustomDomain = process.env.GITHUB_PAGES_CUSTOM_DOMAIN === "true";
+const configuredBasePath = process.env.GITHUB_PAGES_BASE_PATH;
 const isGithubProjectPage =
   process.env.GITHUB_PAGES === "true" &&
   Boolean(repoName) &&
-  !repoName?.endsWith(".github.io");
+  !repoName?.endsWith(".github.io") &&
+  !hasCustomDomain;
 
-const basePath = isGithubProjectPage ? `/${repoName}` : "";
+function normalizeBasePath(value) {
+  if (!value || value === "/") {
+    return "";
+  }
+
+  return value.startsWith("/") ? value : `/${value}`;
+}
+
+const basePath =
+  configuredBasePath === undefined
+    ? isGithubProjectPage
+      ? `/${repoName}`
+      : ""
+    : normalizeBasePath(configuredBasePath);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

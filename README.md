@@ -1,10 +1,10 @@
 # Next Liquid Blog
 
-A clean, static Next.js blog for long-form technical notes and reading-focused publishing.
+A static Next.js blog for technical notes, long-form reading, and GitHub Pages publishing.
 
 Suggested GitHub repository description:
 
-> A static Next.js blog for technical notes, reading-focused essays, and GitHub Pages publishing.
+> A static Next.js blog for technical notes, long-form reading, and GitHub Pages publishing.
 
 ## Stack
 
@@ -44,17 +44,13 @@ Use paths like `imgs/example.png` in markdown and `header-img: imgs/head.jpg` in
 Create a new article template with:
 
 ```bash
-npm run new:post
-# or
 pnpm new:post
 ```
 
 You can also skip the prompts:
 
 ```bash
-npm run new:post -- --title "我的文章" --slug 2026-07-05-my-post --tags React,Next.js --categories Frontend
-# or
-pnpm new:post -- --title "我的文章" --slug 2026-07-05-my-post --tags React,Next.js --categories Frontend
+pnpm new:post -- --title "My Post" --slug 2026-07-05-my-post --tags React,Next.js --categories Frontend
 ```
 
 The command creates `content/posts/<slug>/index.md` and `content/posts/<slug>/imgs/`. Copy the article body into `index.md`, then copy images into `imgs/` and reference them as `imgs/example.png`.
@@ -67,9 +63,9 @@ This repository includes `.github/workflows/deploy.yml`. After pushing to `Whisk
 2. Set `Source` to `GitHub Actions`.
 3. Push to the `main` branch.
 
-The workflow installs dependencies with pnpm, runs `pnpm build`, uploads `out/`, and deploys it to GitHub Pages. For a project page such as `https://whiskeyi.github.io/next-liquid-blog/`, the build uses the repository name as the `basePath`.
+The workflow installs dependencies with pnpm, runs `pnpm build`, uploads `out/`, and deploys it to GitHub Pages. This repository includes `public/CNAME` for the custom domain `blog.zhuchj.com`, so the workflow publishes the site at the custom domain root.
 
-The repository currently includes `public/CNAME` for `blog.zhuchj.com`. Keep it only if that custom domain is configured for this Pages site; otherwise remove `public/CNAME` before deploying to the default GitHub Pages URL.
+If you switch to the default project page URL, such as `https://whiskeyi.github.io/next-liquid-blog/`, remove `public/CNAME` and remove `GITHUB_PAGES_CUSTOM_DOMAIN` from the workflow.
 
 ## License
 
