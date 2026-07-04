@@ -184,6 +184,30 @@
     padding-bottom: 22px;
   }
 
+  .archive-year,
+  .archive-item {
+    grid-template-columns: 1fr;
+  }
+
+  .archive-year {
+    gap: 12px;
+  }
+
+  .archive-year-label {
+    position: static;
+  }
+
+  .archive-item {
+    gap: 8px;
+    min-height: 0;
+    margin: 0;
+    padding: 16px 0;
+  }
+
+  .archive-item em {
+    display: none;
+  }
+
   .feed-toolbar {
     position: static;
     grid-template-columns: 1fr;
@@ -281,7 +305,32 @@
     padding-bottom: 116px;
   }
 
+  .article-neighbor-nav {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 52px;
+  }
+
+  .article-neighbor-link,
+  .article-neighbor-empty {
+    min-height: 118px;
+  }
+
+  .article-neighbor-empty {
+    display: none;
+  }
+
+  .article-neighbor-link-next {
+    text-align: left;
+  }
+
+  .article-neighbor-link-next .article-neighbor-direction {
+    justify-content: flex-start;
+  }
+
   .markdown-body {
+    --inline-code-font-size: clamp(0.8rem, 0.84em, 0.88rem);
+    --code-block-font-size: 0.8rem;
     font-size: calc(1rem * var(--reader-scale, 1));
     line-height: 1.82;
   }
@@ -300,38 +349,13 @@
   }
 
   .code-frame pre {
-    padding: 18px 14px;
-    font-size: 0.84rem;
+    padding: 16px 13px;
   }
 
   .article-image-button {
     margin-right: -6px;
     margin-left: -6px;
     width: calc(100% + 12px);
-  }
-
-  .archive-year,
-  .archive-item {
-    grid-template-columns: 1fr;
-  }
-
-  .archive-year {
-    gap: 12px;
-  }
-
-  .archive-year-label {
-    position: static;
-  }
-
-  .archive-item {
-    gap: 8px;
-    min-height: 0;
-    margin: 0;
-    padding: 16px 0;
-  }
-
-  .archive-item em {
-    display: none;
   }
 
   .about-page {

@@ -52,7 +52,7 @@ export function WorkTimeline({ items }: WorkTimelineProps) {
 
     function updateProgress() {
       const list = listRef.current;
-      if (!list) return;
+      if (!list || items.length === 0) return;
 
       const rect = list.getBoundingClientRect();
       const viewportAnchor = window.innerHeight * 0.72;
@@ -66,6 +66,15 @@ export function WorkTimeline({ items }: WorkTimelineProps) {
         progressRef.current = nextProgress;
         setProgress(nextProgress);
       }
+
+      let nextActiveIndex = 0;
+      itemRefs.current.forEach((item, index) => {
+        if (!item) return;
+        if (item.getBoundingClientRect().top <= viewportAnchor) {
+          nextActiveIndex = index;
+        }
+      });
+      commitActiveIndex(nextActiveIndex);
 
       if (atDocumentBottom || clamped > 0.96) {
         commitActiveIndex(items.length - 1);
@@ -87,7 +96,6 @@ export function WorkTimeline({ items }: WorkTimelineProps) {
           const index = Number((entry.target as HTMLElement).dataset.index);
           if (!entry.isIntersecting) return;
 
-          commitActiveIndex(index);
           commitVisibleItem(index);
         });
       },

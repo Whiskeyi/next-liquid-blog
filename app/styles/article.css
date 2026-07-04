@@ -300,7 +300,82 @@
   min-width: 0;
 }
 
+.article-neighbor-nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 72px;
+}
+
+.article-neighbor-link,
+.article-neighbor-empty {
+  min-height: 142px;
+}
+
+.article-neighbor-link {
+  display: grid;
+  align-content: space-between;
+  gap: 16px;
+  padding: 18px;
+  color: var(--article-heading);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.22), transparent 42%),
+    color-mix(in srgb, var(--glass), transparent 12%);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 18px 48px rgba(24, 34, 43, 0.08);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.article-neighbor-link:hover {
+  border-color: color-mix(in srgb, var(--article-accent), var(--line) 42%);
+  box-shadow: 0 22px 58px rgba(24, 34, 43, 0.12);
+  transform: translateY(-2px);
+}
+
+.article-neighbor-link-next {
+  text-align: right;
+}
+
+.article-neighbor-direction {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--article-muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.article-neighbor-link strong {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 1.06rem;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.article-neighbor-link time {
+  color: var(--article-muted);
+  font-size: 0.82rem;
+}
+
+.article-neighbor-empty {
+  display: block;
+}
+
+:root[data-theme="dark"] .article-neighbor-link {
+  background: rgba(14, 16, 18, 0.68);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18);
+}
+
+:root[data-theme="dark"] .article-neighbor-link:hover {
+  box-shadow: 0 22px 58px rgba(0, 0, 0, 0.24);
+}
+
 .markdown-body {
+  --inline-code-font-size: clamp(0.84rem, 0.88em, 0.94rem);
+  --code-block-font-size: 0.88rem;
   color: var(--article-text);
   font-family: var(--font-serif);
   font-size: calc(1.08rem * var(--reader-scale, 1));
@@ -395,7 +470,7 @@
 .markdown-body code {
   padding: 0.18em 0.36em;
   font-family: var(--font-mono);
-  font-size: 0.88em;
+  font-size: var(--inline-code-font-size);
   background: color-mix(in srgb, var(--article-accent), transparent 88%);
   border: 1px solid color-mix(in srgb, var(--article-accent), transparent 76%);
   border-radius: 6px;
@@ -414,6 +489,7 @@
 .markdown-body pre code {
   padding: 0;
   color: inherit;
+  font: inherit;
   background: transparent;
   border: 0;
 }
@@ -433,8 +509,8 @@
   overflow: auto;
   color: var(--code-text);
   font-family: var(--font-mono);
-  font-size: 0.92rem;
-  line-height: 1.7;
+  font-size: var(--code-block-font-size);
+  line-height: 1.68;
 }
 
 .markdown-body hr {

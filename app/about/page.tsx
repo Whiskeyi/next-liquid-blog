@@ -9,10 +9,10 @@ export const metadata = {
 
 const workTimeline = [
   {
-    period: "2026.01 - 至今",
-    title: "全栈开发",
-    company: "阿里巴巴集团 · 淘宝闪购",
-    points: ["参与零售业务研发、AI Coding平台建设与FDE实践"]
+    period: "2022.06 - 2022.12",
+    title: "前端开发实习",
+    company: "网易（杭州）网络有限公司",
+    points: ["参与 C 端活动页与后台系统研发"]
   },
   {
     period: "2023.06 - 2026.01",
@@ -21,10 +21,10 @@ const workTimeline = [
     points: ["参与数据产品前端研发，包括复杂多维表格、AI智能问数与工程化优化"]
   },
   {
-    period: "2022.06 - 2022.12",
-    title: "前端开发实习",
-    company: "网易（杭州）网络有限公司",
-    points: ["参与 C 端活动页与后台系统研发"]
+    period: "2026.01 - 至今",
+    title: "全栈开发",
+    company: "阿里巴巴集团 · 淘宝闪购",
+    points: ["参与零售业务研发、AI Coding平台建设与FDE实践"]
   }
 ];
 

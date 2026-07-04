@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CalendarDays, Clock3, Eye, Hash } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays, Clock3, Eye, Hash } from "lucide-react";
 import { ArticleReadingTools } from "@/components/article-reading-tools";
 import { ArticleToc } from "@/components/article-toc";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
@@ -51,6 +51,10 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   if (!post) notFound();
 
+  const posts = getAllPosts();
+  const currentIndex = posts.findIndex((item) => item.slug === post.slug);
+  const previousPost = currentIndex >= 0 ? posts[currentIndex + 1] : null;
+  const nextPost = currentIndex > 0 ? posts[currentIndex - 1] : null;
   const labels = Array.from(new Set([...post.categories, ...post.tags]));
   const heroClassName = ["article-hero", post.hasCover ? "article-hero-with-cover" : "article-hero-no-cover"].join(" ");
 
@@ -109,6 +113,34 @@ export default async function BlogPostPage({ params }: PageProps) {
           <ArticleToc headings={post.headings} />
           <div className="article-content">
             <MarkdownRenderer content={post.content} slug={post.slug} />
+            {previousPost || nextPost ? (
+              <nav className="article-neighbor-nav" aria-label="相邻文章">
+                {previousPost ? (
+                  <Link className="article-neighbor-link article-neighbor-link-prev" href={`/blog/${previousPost.slug}`}>
+                    <span className="article-neighbor-direction">
+                      <ArrowLeft size={16} />
+                      上一篇
+                    </span>
+                    <strong>{previousPost.title}</strong>
+                    <time dateTime={previousPost.date}>{previousPost.displayDate}</time>
+                  </Link>
+                ) : (
+                  <span className="article-neighbor-empty" aria-hidden="true" />
+                )}
+                {nextPost ? (
+                  <Link className="article-neighbor-link article-neighbor-link-next" href={`/blog/${nextPost.slug}`}>
+                    <span className="article-neighbor-direction">
+                      下一篇
+                      <ArrowRight size={16} />
+                    </span>
+                    <strong>{nextPost.title}</strong>
+                    <time dateTime={nextPost.date}>{nextPost.displayDate}</time>
+                  </Link>
+                ) : (
+                  <span className="article-neighbor-empty" aria-hidden="true" />
+                )}
+              </nav>
+            ) : null}
           </div>
         </div>
         <ArticleReadingTools headings={post.headings} />
