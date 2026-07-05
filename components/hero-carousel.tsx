@@ -18,6 +18,7 @@ type SwipeStart = {
 };
 
 type SlideDirection = "next" | "previous";
+type ImageLayer = "active" | "previous" | "peek" | "idle";
 
 const SLIDE_INTERVAL_MS = 8000;
 const TOUCH_SWIPE = {
@@ -286,6 +287,13 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
   const showTransitionPrevious = images.length > 1 && previousIndex !== activeIndex;
   const showDragPreview = images.length > 1 && dragPreviewOffset !== 0;
 
+  function getImageLayer(index: number): ImageLayer {
+    if (index === activeIndex) return "active";
+    if (showDragPreview && index === dragPreviewIndex) return "peek";
+    if (showTransitionPrevious && index === previousIndex) return "previous";
+    return "idle";
+  }
+
   return (
     <div
       ref={carouselRef}
@@ -297,40 +305,32 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
       onPointerCancel={handlePointerCancel}
       onPointerLeave={resetParallax}
     >
-      {showTransitionPrevious ? (
-        <img
-          key={`previous-${previousIndex}-${activeIndex}`}
-          src={withBasePath(images[previousIndex])}
-          alt=""
-          data-layer="previous"
-          data-direction={slideDirection}
-          decoding="async"
-          draggable={false}
-        />
-      ) : null}
-      {showDragPreview ? (
-        <img
-          key={`peek-${activeIndex}-${dragPreviewIndex}`}
-          src={withBasePath(images[dragPreviewIndex])}
-          alt=""
-          data-layer="peek"
-          data-direction={dragPreviewOffset > 0 ? "next" : "previous"}
-          decoding="async"
-          draggable={false}
-        />
-      ) : null}
-      <img
-        key={`active-${activeIndex}`}
-        src={withBasePath(images[activeIndex])}
-        alt=""
-        data-layer="active"
-        data-direction={slideDirection}
-        data-animated={showTransitionPrevious}
-        decoding="async"
-        draggable={false}
-        fetchPriority={activeIndex === 0 ? "high" : "auto"}
-        loading={activeIndex === 0 ? "eager" : "lazy"}
-      />
+      {images.map((image, index) => {
+        const layer = getImageLayer(index);
+        const isPeek = layer === "peek";
+        const direction = isPeek
+          ? dragPreviewOffset > 0
+            ? "next"
+            : "previous"
+          : layer === "active" || layer === "previous"
+            ? slideDirection
+            : undefined;
+
+        return (
+          <img
+            key={image}
+            src={withBasePath(image)}
+            alt=""
+            data-layer={layer}
+            data-direction={direction}
+            data-animated={layer === "active" && showTransitionPrevious}
+            decoding="async"
+            draggable={false}
+            fetchPriority={index === 0 ? "high" : "auto"}
+            loading="eager"
+          />
+        );
+      })}
       <div className="hero-carousel-progress">
         {images.map((image, index) => (
           <button

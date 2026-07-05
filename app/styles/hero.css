@@ -39,7 +39,7 @@
   position: absolute;
   left: clamp(24px, 6vw, 76px);
   bottom: clamp(28px, 6vw, 72px);
-  z-index: 2;
+  z-index: 3;
   width: min(500px, calc(100% - 48px));
   min-width: 0;
   color: #fff;
@@ -83,7 +83,7 @@
 .hero-visual::after {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
   pointer-events: none;
   content: "";
   background:
@@ -133,7 +133,7 @@
 }
 
 .hero-carousel img[data-layer="active"] {
-  z-index: 2;
+  z-index: 1;
   opacity: 1;
 }
 
