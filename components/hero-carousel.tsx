@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { PointerEvent } from "react";
+import { flushSync } from "react-dom";
 import { gsap } from "gsap";
 import { withBasePath } from "@/lib/site";
 
@@ -13,17 +14,18 @@ type SwipeStart = {
   x: number;
   y: number;
   pointerId: number;
+  width: number;
 };
 
 type SlideDirection = "next" | "previous";
 
 const SLIDE_INTERVAL_MS = 8000;
 const TOUCH_SWIPE = {
-  minDistancePx: 44,
-  axisRatio: 1.25,
-  dragLimitPx: 82,
-  dragDamping: 0.42,
-  resetDurationSeconds: 0.32
+  minDistancePx: 72,
+  minDistanceRatio: 0.18,
+  axisRatio: 1.18,
+  settleDurationSeconds: 0.5,
+  resetDurationSeconds: 0.34
 } as const;
 const DESKTOP_PARALLAX = {
   maxOffsetPx: 14,
@@ -37,13 +39,15 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
   const moveYRef = useRef<((value: number) => void) | null>(null);
   const swipeStartRef = useRef<SwipeStart | null>(null);
   const dragPreviewOffsetRef = useRef(0);
+  const touchSettlingRef = useRef(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [previousIndex, setPreviousIndex] = useState(0);
   const [slideDirection, setSlideDirection] = useState<SlideDirection>("next");
   const [dragPreviewOffset, setDragPreviewOffset] = useState(0);
+  const [isTouchInteracting, setIsTouchInteracting] = useState(false);
 
   useEffect(() => {
-    if (images.length <= 1) return;
+    if (images.length <= 1 || isTouchInteracting) return;
 
     const timer = window.setTimeout(() => {
       setSlideDirection("next");
@@ -54,7 +58,7 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
     }, SLIDE_INTERVAL_MS);
 
     return () => window.clearTimeout(timer);
-  }, [activeIndex, images.length]);
+  }, [activeIndex, images.length, isTouchInteracting]);
 
   useEffect(() => {
     const carousel = carouselRef.current;
@@ -87,10 +91,7 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
       const deltaY = event.clientY - swipeStart.y;
       if (Math.abs(deltaX) <= Math.abs(deltaY) * TOUCH_SWIPE.axisRatio) return;
 
-      const dragX = Math.max(
-        -TOUCH_SWIPE.dragLimitPx,
-        Math.min(TOUCH_SWIPE.dragLimitPx, deltaX * TOUCH_SWIPE.dragDamping)
-      );
+      const dragX = Math.max(-swipeStart.width, Math.min(swipeStart.width, deltaX));
       const previewOffset = deltaX > 0 ? -1 : 1;
       if (dragPreviewOffsetRef.current !== previewOffset) {
         dragPreviewOffsetRef.current = previewOffset;
@@ -118,16 +119,56 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
     moveYRef.current?.(0);
   }
 
-  function resetTouchDrag(target: HTMLDivElement) {
+  function finishTouchDrag(target: HTMLDivElement) {
+    touchSettlingRef.current = false;
     dragPreviewOffsetRef.current = 0;
     setDragPreviewOffset(0);
+    setIsTouchInteracting(false);
     target.removeAttribute("data-dragging");
     target.removeAttribute("data-drag-direction");
+    target.removeAttribute("data-settling");
+    target.style.setProperty("--hero-drag-x", "0px");
+  }
+
+  function animateTouchDrag(target: HTMLDivElement, x: number, duration: number, onComplete: () => void) {
+    gsap.killTweensOf(target, "--hero-drag-x");
     gsap.to(target, {
-      "--hero-drag-x": 0,
-      duration: TOUCH_SWIPE.resetDurationSeconds,
-      ease: "power3.out"
+      "--hero-drag-x": `${x}px`,
+      duration,
+      ease: "power3.out",
+      overwrite: "auto",
+      onComplete
     });
+  }
+
+  function resetTouchDrag(target: HTMLDivElement) {
+    if (dragPreviewOffsetRef.current === 0) {
+      finishTouchDrag(target);
+      return;
+    }
+
+    touchSettlingRef.current = true;
+    target.removeAttribute("data-dragging");
+    target.setAttribute("data-settling", "true");
+    animateTouchDrag(target, 0, TOUCH_SWIPE.resetDurationSeconds, () => finishTouchDrag(target));
+  }
+
+  function finishCommittedTouchDrag(target: HTMLDivElement, offset: number) {
+    target.style.setProperty("--hero-drag-x", "0px");
+    flushSync(() => {
+      setActiveIndex((current) => {
+        const nextIndex = (current + offset + images.length) % images.length;
+        setPreviousIndex(nextIndex);
+        return nextIndex;
+      });
+      dragPreviewOffsetRef.current = 0;
+      setDragPreviewOffset(0);
+      setIsTouchInteracting(false);
+    });
+    touchSettlingRef.current = false;
+    target.removeAttribute("data-dragging");
+    target.removeAttribute("data-drag-direction");
+    target.removeAttribute("data-settling");
   }
 
   function moveSlide(offset: number) {
@@ -144,6 +185,8 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
   }
 
   function selectSlide(index: number) {
+    if (touchSettlingRef.current) return;
+
     setActiveIndex((current) => {
       if (index === current) return current;
 
@@ -159,16 +202,45 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
     }
   }
 
+  function commitTouchSlide(target: HTMLDivElement, offset: number) {
+    if (images.length <= 1) {
+      resetTouchDrag(target);
+      return;
+    }
+
+    const direction = offset > 0 ? "next" : "previous";
+    const travelX = offset > 0 ? -target.clientWidth : target.clientWidth;
+
+    touchSettlingRef.current = true;
+    target.removeAttribute("data-dragging");
+    target.setAttribute("data-settling", "true");
+    target.setAttribute("data-drag-direction", direction);
+    setSlideDirection(direction);
+
+    if (dragPreviewOffsetRef.current !== offset) {
+      dragPreviewOffsetRef.current = offset;
+      setDragPreviewOffset(offset);
+    }
+
+    animateTouchDrag(target, travelX, TOUCH_SWIPE.settleDurationSeconds, () =>
+      finishCommittedTouchDrag(target, offset)
+    );
+  }
+
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
     if (event.pointerType !== "touch") return;
     if (event.target instanceof Element && event.target.closest(".hero-carousel-progress")) return;
+    if (touchSettlingRef.current) return;
 
+    gsap.killTweensOf(event.currentTarget, "--hero-drag-x");
     dragPreviewOffsetRef.current = 0;
     setDragPreviewOffset(0);
+    setIsTouchInteracting(true);
     swipeStartRef.current = {
       x: event.clientX,
       y: event.clientY,
-      pointerId: event.pointerId
+      pointerId: event.pointerId,
+      width: event.currentTarget.clientWidth
     };
 
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -180,16 +252,22 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
 
     swipeStartRef.current = null;
     releaseSwipeCapture(event.currentTarget, event.pointerId);
-    resetTouchDrag(event.currentTarget);
 
     const deltaX = event.clientX - swipeStart.x;
     const deltaY = event.clientY - swipeStart.y;
+    const minDistance = Math.max(
+      TOUCH_SWIPE.minDistancePx,
+      swipeStart.width * TOUCH_SWIPE.minDistanceRatio
+    );
     const isHorizontalSwipe =
-      Math.abs(deltaX) >= TOUCH_SWIPE.minDistancePx &&
+      Math.abs(deltaX) >= minDistance &&
       Math.abs(deltaX) > Math.abs(deltaY) * TOUCH_SWIPE.axisRatio;
-    if (!isHorizontalSwipe) return;
+    if (!isHorizontalSwipe) {
+      resetTouchDrag(event.currentTarget);
+      return;
+    }
 
-    moveSlide(deltaX < 0 ? 1 : -1);
+    commitTouchSlide(event.currentTarget, deltaX < 0 ? 1 : -1);
   }
 
   function handlePointerCancel(event: PointerEvent<HTMLDivElement>) {
