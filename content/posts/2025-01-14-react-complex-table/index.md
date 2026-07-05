@@ -1,6 +1,6 @@
 ---
 title: "复杂表格组件（React）的实现与思考"
-header-img: imgs/cover-ai.png
+header-img: imgs/cover-ai.jpg
 catalog: true
 date: 2025-01-14 10:00:00
 subtitle: "React 复杂表格组件的实现与思考"

@@ -1,6 +1,6 @@
 ---
 title: "实践写一个高质量的SKILL.md：从单个Skill到Agent工作流"
-header-img: imgs/image-001.png
+header-img: imgs/image-001.jpg
 catalog: true
 date: 2026-06-29 10:00:00
 subtitle: "从单个 Skill 到 Agent 工作流"
@@ -12,7 +12,7 @@ categories:
 ---
 # 实践写一个高质量的SKILL.md：从单个Skill到Agent工作流
 
-![ig_0fb29b4ffe6bbcb5016a4278fbd9c88191898946e38e5dbb82](imgs/image-001.png)
+![ig_0fb29b4ffe6bbcb5016a4278fbd9c88191898946e38e5dbb82](imgs/image-001.jpg)
 
 在将日常工作流程沉淀为 Skill 的过程中，常见问题主要集中在两类。
 
@@ -94,7 +94,7 @@ description: Use when creating or imitating React + Antd backend list, query, ma
 
 ## 写好单个 Skill：先搭骨架，再补边界、验证和工程化
 
-![call_EootQxpeRpU38ZPdIQVYNt7W](imgs/image-002.png)
+![call_EootQxpeRpU38ZPdIQVYNt7W](imgs/image-002.jpg)
 
 一个可用的 Skill 不需要一开始就面面俱到。先写出最小骨架，确保 Agent 知道何时使用、按什么顺序行动、可以读取哪些资源，以及怎样判断任务完成。之后再根据真实失败案例逐步补充细节。
 
@@ -397,7 +397,7 @@ Git 和版本管理解决的是 Skill 如何持续演进。下一步，当一个
 
 但当任务开始跨越调研、设计、实现、测试和交付等多个阶段时，把所有规则继续塞进同一个 `SKILL.md`，反而会让它越来越难触发、难加载，也难维护。这时需要解决的，就不再只是“如何写好一个 Skill”，而是“如何让多个 Skill 有序协作”（这里的“Skill 协作”不是 Skill 彼此主动调用，而是 Agent 在不同阶段按触发条件加载不同 Skill）。
 
-![call_74FIKMXZdawl4ttnDV6brotU](imgs/image-004.png)
+![call_74FIKMXZdawl4ttnDV6brotU](imgs/image-004.jpg)
 
 ### 能力边界扩展：尽可能还原真实工作链路
 

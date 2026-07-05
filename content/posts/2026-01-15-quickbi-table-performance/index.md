@@ -1,6 +1,6 @@
 ---
 title: "前端性能优化篇—QuickBI多维表格底座性能提升一个数量级（百万单元格）"
-header-img: imgs/cover-ai.png
+header-img: imgs/cover-ai.jpg
 catalog: true
 date: 2026-01-15 10:00:00
 subtitle: "Quick BI 多维表格底座性能优化实践"
