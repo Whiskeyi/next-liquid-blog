@@ -66,16 +66,16 @@ System.out.printIn(JSON.toJSONString(group));
 - 设值注入
   ​`IOC` 容器使用属性的 `setter` 方法来注入被依赖的实例
 
-  ```java
-  <property name="userDao" ref="userDao"/>
-  ```
+```java
+<property name="userDao" ref="userDao"/>
+```
 
 - 构造注入
   `IOC` 容器使用构造器来注入被依赖的实例，按构造函数参数顺序指定对应要注入值， 用 `index` 属性指定顺序，从 0 开始
 
-  ```java
-  <constructor-arg ref="db"/>
-  ```
+```java
+<constructor-arg ref="db"/>
+```
 
 ### Lecture 3
 
@@ -88,52 +88,52 @@ System.out.printIn(JSON.toJSONString(group));
 - `BeanFactory` 容器
   `BeanFactory` 是一个管理 `Bean` 的工厂，它主要负责初始化各种 `Bean`，并调用它们的生命周期方法
 
-  ```java
-  Resource resource = new ClassPathResource("applicationContext.xml");
-  BeanFactory factory = new XmlBeanFactory(resource);
-  ```
+```java
+Resource resource = new ClassPathResource("applicationContext.xml");
+BeanFactory factory = new XmlBeanFactory(resource);
+```
 
 - `ApplicationContext` 容器
   `ApplicationContext` 继承了 `BeanFactory` 接口，是 `BeanFactory` 的拓展，增加了例如 AOP、国际化、事件支持等功能
 
-  ```java
-  ApplicationContext applicationContext = new ClassPathXmlApplicationContext(String configLocation);
-  ```
+```java
+ApplicationContext applicationContext = new ClassPathXmlApplicationContext(String configLocation);
+```
 
 - Web 服务器实例化
   `ApplicationContext` 容器通常使用基于 `ContextLoaderListener` 实现
 
-  ```java
-  <context-param>
-    <param-name>contextConfigLocation</param-name>
-    <!--加载spring目录下的applicationContext.xml文件-->
-    <param-value>
-        classpath:spring/applicationContext.xml
-    </param-value>
-  </context-param>
-  <!--指定以ContextLoaderListener方式启动Spring容器-->
-  <listener>
-    <listener-class>
-        org.springframework.web.context.ContextLoaderListener
-    </listener-class>
-  </listener>
-  ```
+```java
+<context-param>
+  <param-name>contextConfigLocation</param-name>
+  <!--加载spring目录下的applicationContext.xml文件-->
+  <param-value>
+      classpath:spring/applicationContext.xml
+  </param-value>
+</context-param>
+<!--指定以ContextLoaderListener方式启动Spring容器-->
+<listener>
+  <listener-class>
+      org.springframework.web.context.ContextLoaderListener
+  </listener-class>
+</listener>
+```
 
 #### 注入
 
 - 注入普通属性
-  ![3-1](imgs/3-1.png)
+![property-injection](imgs/property-injection.png)
 
 - 注入 bean 引用
-  ![3-2](imgs/3-2.png)
+![bean-reference](imgs/bean-reference.png)
 
 - bean 的自动装配
-  ![3-3](imgs/3-3.png)
+![bean-autowire](imgs/bean-autowire.png)
 
 - 注入嵌套 bean：不被 spring 访问，将嵌套的 bean 注入 property 属性中
 
 - 注入集合类型值：
-  ![3-4](imgs/3-4.png)
+![collection-injection](imgs/collection-injection.png)
 
 #### bean 的作用域 scope
 
@@ -147,21 +147,21 @@ System.out.printIn(JSON.toJSONString(group));
 
 - 注入之后——init-method
 
-  ```java
-  <bean id="chinese" class="org.j2ee.service.impl.Chinese"
-  init-method="init">
-  <property name="axe" ref="steelAxe"/>
-  </bean>
-  ```
+```java
+<bean id="chinese" class="org.j2ee.service.impl.Chinese"
+init-method="init">
+<property name="axe" ref="steelAxe"/>
+</bean>
+```
 
 - 销毁之前——destroy-method
 
-  ```java
-  <bean id="chinese" class="org.j2ee.service.impl.Chinese"
-  destroy-method="destroy">
-  <property name="axe" ref="steelAxe"/>
-  </bean>
-  ```
+```java
+<bean id="chinese" class="org.j2ee.service.impl.Chinese"
+destroy-method="destroy">
+<property name="axe" ref="steelAxe"/>
+</bean>
+```
 
 #### Spring 国际化
 
@@ -198,7 +198,7 @@ System.out.printIn(JSON.toJSONString(group));
 `pom.xml` 添加依赖
 为类添加 `logger` 静态属性
 
-![3-5](imgs/3-5.png)
+![log4j-logger](imgs/log4j-logger.png)
 
 用 logger 输出日志：`logger.debug、logger.info、logger.warn、logger.error、logger.fetal`
 
@@ -212,7 +212,7 @@ System.out.printIn(JSON.toJSONString(group));
   1. 测试类前添加注解@RunWith 和@ContextConfiguration
   2. 通过@Resource 给测试类注入容器中的 bean
 
-![3-6](imgs/3-6.png)
+![spring-test](imgs/spring-test.png)
 
 ### Lecture 4
 
@@ -363,7 +363,7 @@ ORM 通过使用描述对象和数据库之间映射的，将 java 程序中的�
 - 加入数据库 `mysql-connector-java` 依赖包
 - 在 `resources/META-INF` 中添加 `persistence.xml` 配置 JPA，配好实体类的包扫描， 在实体类包中为每张表对应
 
-![5-1](imgs/5-1.png)
+![jpa-config](imgs/jpa-config.png)
 
 - 建立一个实体类 `JavaBean`
 - 创建 `javabean`
@@ -371,7 +371,7 @@ ORM 通过使用描述对象和数据库之间映射的，将 java 程序中的�
 - 在类前面添加@Entity 和@Table(“”)注解属性
 - 在属性前添加相应注解
 
-![5-2](imgs/5-2.png)
+![jpa-entity](imgs/jpa-entity.png)
 
 1. 表注解：在实体类定义语句前注解
 
@@ -447,7 +447,7 @@ entityManagerFactory.close();
 
 **持久化对象生命周期：**
 
-![5-3](imgs/5-3.png)
+![jpa-lifecycle](imgs/jpa-lifecycle.png)
 
 ### Lecture 6
 
@@ -532,15 +532,15 @@ List<User> users = query. getResultList();
 
 **MyBatis 接口方法：**
 
-![8-1](imgs/8-1.png)
+![mybatis-mapper](imgs/mybatis-mapper.png)
 
 **配置：**
 
-![8-2](imgs/8-2.png)
+![mybatis-config](imgs/mybatis-config.png)
 
 **测试：**
 
-![8-3](imgs/8-3.png)
+![mybatis-test](imgs/mybatis-test.png)
 
 **#{} 占位符 、${} 拼接符：**
 
@@ -567,7 +567,7 @@ List<User> users = query. getResultList();
 
 Spring 的一个子项目。用于简化数据库访问，支持 NoSQL 和关系数据存储。其主要目标是使数据库的访问变得方便快捷
 
-![8-4](imgs/8-4.png)
+![spring-data-repository](imgs/spring-data-repository.png)
 
 ##### JpaRepository
 
@@ -578,7 +578,7 @@ Spring 的一个子项目。用于简化数据库访问，支持 NoSQL 和关系
 - `T saveAndFlush(T entity);` //强制执行持久化
 - `void deleteInBatch(Iterable entities);` //删除一个实体集合
 
-![8-5](imgs/8-5.png)
+![jpa-repository-test](imgs/jpa-repository-test.png)
 
 ### Lecture 9
 
@@ -623,11 +623,11 @@ Spring 的一个子项目。用于简化数据库访问，支持 NoSQL 和关系
 - 表示容器再启动时立即加载 `servlet`
 - 处理所有 `URL`
 
-![10-1](imgs/10-1.png)
+![dispatcher-servlet](imgs/dispatcher-servlet.png)
 
 **controller:**
 
-![10-2](imgs/10-2.png)
+![springmvc-controller](imgs/springmvc-controller.png)
 
 | 请求方法 | 说明                                                                                                      |
 | -------- | --------------------------------------------------------------------------------------------------------- |
@@ -659,7 +659,7 @@ public String handle14(User user) {
 }
 ```
 
-![10-3](imgs/10-3.png)
+![form-binding](imgs/form-binding.png)
 
 **Servlet API 对象作为入参:**
 如果处理方法自行使用 `HttpServletResponse` 返回响应，则处理方法的返回值设置成 `void` 即可
@@ -712,7 +712,7 @@ public void handle21()
 - 输出 `json——@ResponseBody`
 - 输入 `json——@RequestBody`
 
-![10-4](imgs/10-4.png)
+![json-binding](imgs/json-binding.png)
 
 ```java
 // 让Spring MVC不处理静态资源

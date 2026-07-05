@@ -307,72 +307,72 @@ function ChangeName({ name, setName }) {
 
   可以在 startTransition 中使用 async
 
-  ```javascript
-  startTransition(async () => {
-    await updateData();
-  };
+```javascript
+startTransition(async () => {
+  await updateData();
+};
 
-  ```
+```
 
 - **useActionState**
 
   新 hook，根据 actions 来更新 state，处理  Actions  的常见情况
 
-  ```javascript
-  const [state, submitAction, isPending] = useActionState(
-    actionFunction,
-    initialState
-  );
-  ```
+```javascript
+const [state, submitAction, isPending] = useActionState(
+  actionFunction,
+  initialState
+);
+```
 
 - **action and formAction props**
 
   自动管理表单项（inputs、buttons），将 action 整合于表单中
 
-  ```javascript
-  <form action={action} >
-  <button formAction={action}>
+```javascript
+<form action={action} >
+<button formAction={action}>
 
-  ```
+```
 
 - **useFormStatus**
   获取表单 actions 的状态，有点类似 antd 的 const [form] = Form.useForm();
 
-  ```javascript
-  const { data, pending, method, action } = useFormStatus();
-  ```
+```javascript
+const { data, pending, method, action } = useFormStatus();
+```
 
 - **useOptimistic**
 
   在 action 完成前更新 UI，即实现乐观更新（一种用户体验优化策略，常用于客户端应用中，在与服务器交互时立即更新 UI，假设操作会成功，从而提供即时反馈，即使实际的服务器响应可能稍后才到达。如果操作失败，再回滚到之前的状态）
 
-  ```javascript
-  // 在updateName请求进行时立即渲染optimisticName。当更新完成或出错时，React将自动切换回currentName值。
-  function ChangeName({ currentName, onUpdateName }) {
-    const [optimisticName, setOptimisticName] = useOptimistic(currentName);
+```javascript
+// 在updateName请求进行时立即渲染optimisticName。当更新完成或出错时，React将自动切换回currentName值。
+function ChangeName({ currentName, onUpdateName }) {
+  const [optimisticName, setOptimisticName] = useOptimistic(currentName);
 
-    const submitAction = async (formData) => {
-      const newName = formData.get("name");
-      setOptimisticName(newName);
-      const updatedName = await updateName(newName);
-      onUpdateName(updatedName);
-    };
+  const submitAction = async (formData) => {
+    const newName = formData.get("name");
+    setOptimisticName(newName);
+    const updatedName = await updateName(newName);
+    onUpdateName(updatedName);
+  };
 
-    return (
-      <form action={submitAction}>
-        <p>Your name is: {optimisticName}</p>
-        <p>
-          <label>Change Name:</label>
-          <input
-            type="text"
-            name="name"
-            disabled={currentName !== optimisticName}
-          />
-        </p>
-      </form>
-    );
-  }
-  ```
+  return (
+    <form action={submitAction}>
+      <p>Your name is: {optimisticName}</p>
+      <p>
+        <label>Change Name:</label>
+        <input
+          type="text"
+          name="name"
+          disabled={currentName !== optimisticName}
+        />
+      </p>
+    </form>
+  );
+}
+```
 
 **其它更新：**
 
@@ -380,60 +380,60 @@ function ChangeName({ name, setName }) {
 
   非 hook（仅能在 render 中调用，不同于 hook 可以在条件判断中使用），用于消费资源（官方说未来会支持更多资源类型），目前在 react19 可以读 promise 和 context 的值。
 
-  ```javascript
-  // use promise
-  function Comments({ promise }) {
-    // 使用use会等待promise被resolve，在未被resolve前显示suspense
-    const resolvedData = use(promise);
-    return <span>{resolvedData}</span>;
+```javascript
+// use promise
+function Comments({ promise }) {
+  // 使用use会等待promise被resolve，在未被resolve前显示suspense
+  const resolvedData = use(promise);
+  return <span>{resolvedData}</span>;
+}
+
+function Page({ promise }) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Comments promise={promise} />
+    </Suspense>
+  );
+}
+
+// use context
+import ThemeContext from "./ThemeContext";
+
+function Heading({ children }) {
+  if (children == null) {
+    return null;
   }
 
-  function Page({ promise }) {
-    return (
-      <Suspense fallback={<div>Loading...</div>}>
-        <Comments promise={promise} />
-      </Suspense>
-    );
-  }
-
-  // use context
-  import ThemeContext from "./ThemeContext";
-
-  function Heading({ children }) {
-    if (children == null) {
-      return null;
-    }
-
-    // useContext在前置返回时异常
-    const theme = use(ThemeContext);
-    return <h1 style={{ color: theme.color }}>{children}</h1>;
-  }
-  ```
+  // useContext在前置返回时异常
+  const theme = use(ThemeContext);
+  return <h1 style={{ color: theme.color }}>{children}</h1>;
+}
+```
 
 - **Preloading APIs**
 
   支持加载和预加载浏览器资源
 
-  ```javascript
-  // From
-  function Component() {
-    preinit("https://.../script.js", { as: "script" });
-    preload("https://.../stylesheet.css", { as: "style" });
-    prefetchDNS("https://../");
-    preconnect("https://.../");
+```javascript
+// From
+function Component() {
+  preinit("https://.../script.js", { as: "script" });
+  preload("https://.../stylesheet.css", { as: "style" });
+  prefetchDNS("https://../");
+  preconnect("https://.../");
 
-    return ...
-  }
+  return ...
+}
 
-  // To
-  <head>
-    <link ref="prefetch-dns" href="https://..." />
-    <link ref="preconnect" href="https://..." />
-    <link ref="preload" as="font" href="https://.../font.woff" />
-    <script async="" src="http://.../script.js"></script>
-  </head>
+// To
+<head>
+  <link ref="prefetch-dns" href="https://..." />
+  <link ref="preconnect" href="https://..." />
+  <link ref="preload" as="font" href="https://.../font.woff" />
+  <script async="" src="http://.../script.js"></script>
+</head>
 
-  ```
+```
 
 ### **Improvements(改进)**
 
@@ -441,81 +441,81 @@ function ChangeName({ name, setName }) {
 
   使用 ref 作为函数式组件的 props，未来将废除移除 forwardRef
 
-  ```javascript
-  // Before
-  import { forwardRef } from "react";
-  const Input = forwardRef((props, ref) => {
-    return <input ref={ref} ... />
-  })
+```javascript
+// Before
+import { forwardRef } from "react";
+const Input = forwardRef((props, ref) => {
+  return <input ref={ref} ... />
+})
 
-  // After
-  function Input({ ref }) {
-    return <input ref={ref} ... />
-  }
+// After
+function Input({ ref }) {
+  return <input ref={ref} ... />
+}
 
-  // 可以支持一些事件监听等，来优化内存
-  <div
-    ref={ref => {
-      ...
-      retrun () => {
-        ref.removeEventHandler('change', handleInputChange)
-      }
-    }}
-  />
+// 可以支持一些事件监听等，来优化内存
+<div
+  ref={ref => {
+    ...
+    retrun () => {
+      ref.removeEventHandler('change', handleInputChange)
+    }
+  }}
+/>
 
-  ```
+```
 
 - **Document metadata & Stylesheet support**
 
   能够在组件中使用文档 metadata 的标签或者渲染样式表（stylesheet）
 
-  ```javascript
-  // From
-  function BlogPost({ post }) {
-    return (
-      <title>{post.title}</title>
-      <meta name="author" content={post.author} />
-      <meta property="og:image" content={post.image} />
-    )
-  }
+```javascript
+// From
+function BlogPost({ post }) {
+  return (
+    <title>{post.title}</title>
+    <meta name="author" content={post.author} />
+    <meta property="og:image" content={post.image} />
+  )
+}
 
-  // To
-  <html>
-    <head>
-      <title>xxx</title>
-      <meta name="author" content="xxx" />
-      <meta name="og:image" content="xxx" />
-    </head>
-  </html>
+// To
+<html>
+  <head>
+    <title>xxx</title>
+    <meta name="author" content="xxx" />
+    <meta name="og:image" content="xxx" />
+  </head>
+</html>
 
-  ```
+```
 
-  ```javascript
-  // From
-  function Component() {
-    return (
-      <div>
-        <link rel="stylesheet" href="/styles/styles.css" precedence="default" />
-        <link rel="stylesheet" href="/styles/button.css" precedence="default" />
-        <link rel="stylesheet" href="/styles/article.css" precedence="high" />
-        <article>...</article>
-      </div>
-    );
-  }
+```javascript
+// From
+function Component() {
+  return (
+    <div>
+      <link rel="stylesheet" href="/styles/styles.css" precedence="default" />
+      <link rel="stylesheet" href="/styles/button.css" precedence="default" />
+      <link rel="stylesheet" href="/styles/article.css" precedence="high" />
+      <article>...</article>
+    </div>
+  );
+}
 
-  // To
-  <html>
-    <head>
-      <link ref="stylesheet" href="/style/styles.css" />
-      ...
-    </head>
-    <body>
-      <div>
-        <article>...</article>
-      </div>
-    </body>
-  </html>;
-  ```
+// To
+<html>
+  <head>
+    <link ref="stylesheet" href="/style/styles.css" />
+    ...
+  </head>
+  <body>
+    <div>
+      <article>...</article>
+    </div>
+  </body>
+</html>;
+```
 
 ### **Server API（略）**
 
@@ -695,23 +695,23 @@ const App = () => {
 - 升级 React 相关依赖（如 react、react-dom  等）
   - react-dom 导入变更（react18 变更）
 
-    ```javascript
-    // From
-    import ReactDOM from "react-dom";
-    // To
-    import ReactDOM from "react-dom/client";
-    ```
+```javascript
+// From
+import ReactDOM from "react-dom";
+// To
+import ReactDOM from "react-dom/client";
+```
 
 - 升级 ts 包，包括  @types/react  和  @types/react-dom
   - 大概工作量：尝试将我们项目（大型 monorepo，大约 200w code lines）ts 升级后发现近 5000errors 需要处理
   - 明显差异：组件 props 的 children 必须明确声明列出（具体详见https://github.com/DefinitelyTyped/DefinitelyTyped/pull/56210 ）
 
-    ```javascript
-    interface ButtonProps {
-      color: string;
-      children?: React.ReactNode;
-    }
-    ```
+```javascript
+interface ButtonProps {
+  color: string;
+  children?: React.ReactNode;
+}
+```
 
 ### **二、调整高版本不兼容的代码**
 
@@ -736,20 +736,20 @@ npx codemod@latest react/19/replace-string-ref
   - 为什么被废弃？新 api 提供新的渲染模式（并发），并支持了一些新特性
   - 解决方案：替换为 createRoot(),render 和 root.unmount()
 
-    <img src="imgs/domRender.jpg" />
+<img src="imgs/domRender.jpg" />
 
-    ```javascript
-    // Before
-    import { render } from "react-dom";
-    const container = document.getElementById("app");
-    render(<App tab="home" />, container);
+```javascript
+// Before
+import { render } from "react-dom";
+const container = document.getElementById("app");
+render(<App tab="home" />, container);
 
-    // After
-    import { createRoot } from "react-dom/client";
-    const container = document.getElementById("app");
-    const root = createRoot(container);
-    root.render(<App tab="home" />);
-    ```
+// After
+import { createRoot } from "react-dom/client";
+const container = document.getElementById("app");
+const root = createRoot(container);
+root.render(<App tab="home" />);
+```
 
 - **componentWillMount**
   - 为什么被废弃？如果你的应用程序使用  [Suspense](https://zh-hans.react.dev/reference/react/Sus%E2%80%8B%E2%80%8Bpense)等新式的  React  功能时，componentWillMount  不保证组件将被挂载。如果渲染尝试被中止，那么  React  将丢弃正在进行的树，并在下一次尝试期间尝试从头开始构建组件。
@@ -765,139 +765,139 @@ npx codemod@latest react/19/replace-string-ref
   - 为什么被废弃？可以返回组件挂载到 dom 上的实例。 JSX  节点与操作相应的  DOM  节点的代码之间的联系不是显式的，因此使用  findDOMNode  的代码非常脆弱
   - 解决方案：使用 refs 替代，可以通过 props 传递、Forwarding Refs…
 
-    ```javascript
-    // Before
-    class MyComponent extends React.Component {
-      componentDidMount() {
-        const domNode = ReactDOM.findDOMNode(this);
-        // 操作 DOM 节点
-      }
+```javascript
+// Before
+class MyComponent extends React.Component {
+  componentDidMount() {
+    const domNode = ReactDOM.findDOMNode(this);
+    // 操作 DOM 节点
+  }
 
-      render() {
-        return <div>Example</div>;
-      }
-    }
+  render() {
+    return <div>Example</div>;
+  }
+}
 
-    // After
-    class MyComponent extends React.Component {
-      constructor(props) {
-        super(props);
-        this.myRef = React.createRef();
-      }
+// After
+class MyComponent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.myRef = React.createRef();
+  }
 
-      componentDidMount() {
-        const domNode = this.myRef.current;
-        // 操作DOM节点
-      }
+  componentDidMount() {
+    const domNode = this.myRef.current;
+    // 操作DOM节点
+  }
 
-      render() {
-        return <div ref={this.myRef}>Example</div>;
-      }
-    }
-    ```
+  render() {
+    return <div ref={this.myRef}>Example</div>;
+  }
+}
+```
 
 - **String Refs**
   - 移除版本：React19
   - 为什么被废弃？涉及到全局的字符串命名，影响共享 ref 和可维护性
   - 解决方案：使用 React.createRef()替换
 
-    ```javascript
-    // Before
-    class MyComponent extends React.Component {
-      render() {
-        return <div ref="myDiv" />;
-      }
+```javascript
+// Before
+class MyComponent extends React.Component {
+  render() {
+    return <div ref="myDiv" />;
+  }
 
-      componentDidMount() {
-        const node = this.refs.myDiv;
-        // ...可以对DOM节点node做操作
-      }
-    }
+  componentDidMount() {
+    const node = this.refs.myDiv;
+    // ...可以对DOM节点node做操作
+  }
+}
 
-    // After
-    class MyComponent extends React.Component {
-      constructor(props) {
-        super(props);
-        this.myDiv = React.createRef();
-      }
+// After
+class MyComponent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.myDiv = React.createRef();
+  }
 
-      render() {
-        return <div ref={this.myDiv} />;
-      }
+  render() {
+    return <div ref={this.myDiv} />;
+  }
 
-      componentDidMount() {
-        const node = this.myDiv.current;
-        // ...可以对DOM节点node做操作
-      }
-    }
-    ```
+  componentDidMount() {
+    const node = this.myDiv.current;
+    // ...可以对DOM节点node做操作
+  }
+}
+```
 
 - **Legacy Context**
   - 移除版本：React19
   - 为什么被废弃？容易被误用（如错误传递数据），并且可能导致维护上的问题
   - 解决方案：将过时的 apichildContextTypes 和 getChildContext  替换为新的 API React.createContext()
 
-    ```javascript
-    // Before
-    class MyProvider extends React.Component {
-      getChildContext() {
-        return { value: this.props.value };
-      }
+```javascript
+// Before
+class MyProvider extends React.Component {
+  getChildContext() {
+    return { value: this.props.value };
+  }
 
-      render() {
-        return this.props.children;
-      }
-    }
-    MyProvider.childContextTypes = {
-      value: PropTypes.string,
-    };
+  render() {
+    return this.props.children;
+  }
+}
+MyProvider.childContextTypes = {
+  value: PropTypes.string,
+};
 
-    class MyConsumer extends React.Component {
-      render() {
-        return <div>{this.context.value}</div>;
-      }
-    }
-    MyConsumer.contextTypes = {
-      value: PropTypes.string,
-    };
+class MyConsumer extends React.Component {
+  render() {
+    return <div>{this.context.value}</div>;
+  }
+}
+MyConsumer.contextTypes = {
+  value: PropTypes.string,
+};
 
-    // After
-    const MyContext = React.createContext(defaultValue);
+// After
+const MyContext = React.createContext(defaultValue);
 
-    class MyProvider extends React.Component {
-      render() {
-        return (
-          <MyContext.Provider value={this.props.value}>
-            {this.props.children}
-          </MyContext.Provider>
-        );
-      }
-    }
+class MyProvider extends React.Component {
+  render() {
+    return (
+      <MyContext.Provider value={this.props.value}>
+        {this.props.children}
+      </MyContext.Provider>
+    );
+  }
+}
 
-    class MyConsumer extends React.Component {
-      render() {
-        return (
-          <MyContext.Consumer>{(value) => <div>{value}</div>}</MyContext.Consumer>
-        );
-      }
-    }
-    ```
+class MyConsumer extends React.Component {
+  render() {
+    return (
+      <MyContext.Consumer>{(value) => <div>{value}</div>}</MyContext.Consumer>
+    );
+  }
+}
+```
 
 - **useRef()和 createContext()需要一个参数**
   - 变更版本：React19
   - 为什么被变更？能够简化其类型签名。并且改变后所有 ref 都为 mutable，不会遇到无法更改 ref 的问题
   - 解决方案：替换为 useRef(undefined)、createContext(undefined)。
 
-    ```javascript
-    // @ts-expect-error: Expected 1 argument but saw none
-    useRef();
-    // Passes
-    useRef(undefined);
-    // @ts-expect-error: Expected 1 argument but saw none
-    createContext();
-    // Passes
-    createContext(undefined);
-    ```
+```javascript
+// @ts-expect-error: Expected 1 argument but saw none
+useRef();
+// Passes
+useRef(undefined);
+// @ts-expect-error: Expected 1 argument but saw none
+createContext();
+// Passes
+createContext(undefined);
+```
 
 ### **三、兼容性问题**
 

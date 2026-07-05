@@ -15,13 +15,15 @@ type SwipeStart = {
   pointerId: number;
 };
 
+type SlideDirection = "next" | "previous";
+
 const SLIDE_INTERVAL_MS = 8000;
 const TOUCH_SWIPE = {
   minDistancePx: 44,
   axisRatio: 1.25,
-  dragLimitPx: 56,
-  dragDamping: 0.28,
-  resetDurationSeconds: 0.36
+  dragLimitPx: 82,
+  dragDamping: 0.42,
+  resetDurationSeconds: 0.32
 } as const;
 const DESKTOP_PARALLAX = {
   maxOffsetPx: 14,
@@ -34,13 +36,17 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
   const moveXRef = useRef<((value: number) => void) | null>(null);
   const moveYRef = useRef<((value: number) => void) | null>(null);
   const swipeStartRef = useRef<SwipeStart | null>(null);
+  const dragPreviewOffsetRef = useRef(0);
   const [activeIndex, setActiveIndex] = useState(0);
   const [previousIndex, setPreviousIndex] = useState(0);
+  const [slideDirection, setSlideDirection] = useState<SlideDirection>("next");
+  const [dragPreviewOffset, setDragPreviewOffset] = useState(0);
 
   useEffect(() => {
     if (images.length <= 1) return;
 
     const timer = window.setTimeout(() => {
+      setSlideDirection("next");
       setActiveIndex((current) => {
         setPreviousIndex(current);
         return (current + 1) % images.length;
@@ -85,7 +91,13 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
         -TOUCH_SWIPE.dragLimitPx,
         Math.min(TOUCH_SWIPE.dragLimitPx, deltaX * TOUCH_SWIPE.dragDamping)
       );
+      const previewOffset = deltaX > 0 ? -1 : 1;
+      if (dragPreviewOffsetRef.current !== previewOffset) {
+        dragPreviewOffsetRef.current = previewOffset;
+        setDragPreviewOffset(previewOffset);
+      }
       event.currentTarget.setAttribute("data-dragging", "true");
+      event.currentTarget.setAttribute("data-drag-direction", previewOffset > 0 ? "next" : "previous");
       event.currentTarget.style.setProperty("--hero-drag-x", `${dragX}px`);
       return;
     }
@@ -107,7 +119,10 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
   }
 
   function resetTouchDrag(target: HTMLDivElement) {
+    dragPreviewOffsetRef.current = 0;
+    setDragPreviewOffset(0);
     target.removeAttribute("data-dragging");
+    target.removeAttribute("data-drag-direction");
     gsap.to(target, {
       "--hero-drag-x": 0,
       duration: TOUCH_SWIPE.resetDurationSeconds,
@@ -118,6 +133,7 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
   function moveSlide(offset: number) {
     if (images.length <= 1) return;
 
+    setSlideDirection(offset > 0 ? "next" : "previous");
     setActiveIndex((current) => {
       const nextIndex = (current + offset + images.length) % images.length;
       if (nextIndex === current) return current;
@@ -131,6 +147,7 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
     setActiveIndex((current) => {
       if (index === current) return current;
 
+      setSlideDirection(index > current ? "next" : "previous");
       setPreviousIndex(current);
       return index;
     });
@@ -146,6 +163,8 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
     if (event.pointerType !== "touch") return;
     if (event.target instanceof Element && event.target.closest(".hero-carousel-progress")) return;
 
+    dragPreviewOffsetRef.current = 0;
+    setDragPreviewOffset(0);
     swipeStartRef.current = {
       x: event.clientX,
       y: event.clientY,
@@ -181,6 +200,14 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
     }
   }
 
+  function getWrappedIndex(index: number) {
+    return (index + images.length) % images.length;
+  }
+
+  const dragPreviewIndex = images.length > 1 ? getWrappedIndex(activeIndex + dragPreviewOffset) : activeIndex;
+  const showTransitionPrevious = images.length > 1 && previousIndex !== activeIndex;
+  const showDragPreview = images.length > 1 && dragPreviewOffset !== 0;
+
   return (
     <div
       ref={carouselRef}
@@ -192,8 +219,40 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
       onPointerCancel={handlePointerCancel}
       onPointerLeave={resetParallax}
     >
-      <img src={withBasePath(images[previousIndex])} alt="" data-layer="previous" />
-      <img key={images[activeIndex]} src={withBasePath(images[activeIndex])} alt="" data-layer="active" />
+      {showTransitionPrevious ? (
+        <img
+          key={`previous-${previousIndex}-${activeIndex}`}
+          src={withBasePath(images[previousIndex])}
+          alt=""
+          data-layer="previous"
+          data-direction={slideDirection}
+          decoding="async"
+          draggable={false}
+        />
+      ) : null}
+      {showDragPreview ? (
+        <img
+          key={`peek-${activeIndex}-${dragPreviewIndex}`}
+          src={withBasePath(images[dragPreviewIndex])}
+          alt=""
+          data-layer="peek"
+          data-direction={dragPreviewOffset > 0 ? "next" : "previous"}
+          decoding="async"
+          draggable={false}
+        />
+      ) : null}
+      <img
+        key={`active-${activeIndex}`}
+        src={withBasePath(images[activeIndex])}
+        alt=""
+        data-layer="active"
+        data-direction={slideDirection}
+        data-animated={showTransitionPrevious}
+        decoding="async"
+        draggable={false}
+        fetchPriority={activeIndex === 0 ? "high" : "auto"}
+        loading={activeIndex === 0 ? "eager" : "lazy"}
+      />
       <div className="hero-carousel-progress">
         {images.map((image, index) => (
           <button

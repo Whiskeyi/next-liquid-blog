@@ -14,6 +14,8 @@ type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
+const LEGACY_FEATURE_ARTICLE_SLUG = "2024-10-26-React19";
+
 export function generateStaticParams() {
   return getAllPosts().map((post) => ({ slug: post.slug }));
 }
@@ -57,10 +59,11 @@ export default async function BlogPostPage({ params }: PageProps) {
   const nextPost = currentIndex > 0 ? posts[currentIndex - 1] : null;
   const labels = Array.from(new Set([...post.categories, ...post.tags]));
   const heroClassName = ["article-hero", post.hasCover ? "article-hero-with-cover" : "article-hero-no-cover"].join(" ");
+  const articleClassName = post.slug === LEGACY_FEATURE_ARTICLE_SLUG ? "article-feature" : "article-standard";
 
   return (
     <main>
-      <article>
+      <article className={articleClassName}>
         <header className={heroClassName} data-cover-orientation={post.coverOrientation}>
           {post.hasCover ? (
             <figure className="article-hero-image" aria-label={`${post.title} 封面图`}>

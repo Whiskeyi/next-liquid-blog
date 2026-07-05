@@ -22,23 +22,23 @@ categories:
 
 - EAI：Enterprise Application Integration 企业应用集成，是中间件的一种，可完成企业内部基于各种不同平台、不同方案建立的异构应用集成互联，实现数据和信息在各个系统中同步和共享的一种方法和技术。
 
-  ![图片1](imgs/图片 1.png)
+![eai-point-to-point](imgs/eai-point-to-point.png)
 
   - Hub/spoke （集线器架构）：Hub/Spoke 架构是星型拓扑结构，由处于系统中央的一个 Hub 和连接在 Hub 及应用系统的多个适配器(adapter)组成。适配器在 Hub 和应用系统之间，进行数据格式的转换与传输。适配器将应用系统的数据信息转化为 Hub 可以识别的格式并传递给 Hub, Hub 通过消息代理管理消息路由，并将这些来自应用系统的数据消息按其要求的路由规则传递给目标应用系统的适配器。
 
-    ![图片2](imgs/图片 2.png)
+![hub-spoke](imgs/hub-spoke.png)
 
   - BUS（总线架构）：可以看作是 Hub/Spoke 星型架构的一种变形。将星型中心点 Hub 的传输消息的功能提炼成一条消息传递总线，而将适配器、集成引擎绑在了应用系统所在的平台。应用程序使用适配器转换消息格式，并将消息发送到总线上。
 
-    ![图片3](imgs/图片 3.png)
+![bus-architecture](imgs/bus-architecture.png)
 
 - SOA：在分布式架构下，当服务越来越多，容量的评估，小服务资源的浪费等问题逐渐显现，增加了一个调度中心对集群进行实时管理。它将应用程序的不同功能单元（称为服务）通过这些服务之间定义良好的接口和契约联系起来。
 
-  ![图片4](imgs/图片 4.png)
+![soa-esb](imgs/soa-esb.png)
 
 - 微服务：微服务架构在某种程度上是面向服务的架构 SOA 继续发展的下一步，它更加强调服务的"彻底拆分"。
 
-  ![图片5](imgs/图片 5.png)
+![microservice-architecture](imgs/microservice-architecture.png)
 
 ### Spring Boot
 
@@ -71,25 +71,25 @@ categories:
 
 - 启动类（@SpringBootApplication）：普通 java 类，位于项目根包下，main 函数入口
 
-  ```java
-  @SpringBootApplication
-  public class SpringBootP1Application {
-      public static void main(String[] args) {
-          SpringApplication.run(SpringBootP1Application.class, args);
-      }
-  }
-  ```
+```java
+@SpringBootApplication
+public class SpringBootP1Application {
+    public static void main(String[] args) {
+        SpringApplication.run(SpringBootP1Application.class, args);
+    }
+}
+```
 
 - 配置文件：application.properties/.yml
 
-  ```properties
-  spring:
-    datasource:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://localhost:3306/springbootp1
-      username: root
-      password: 123
-  ```
+```properties
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/springbootp1
+    username: root
+    password: 123
+```
 
 - Web 层配置开发：
 
@@ -107,24 +107,24 @@ categories:
 
   5. @RequestBody：JSON 请求
 
-  ```java
-  @RestController
-  @RequestMapping("user")
-  public class UserController {
-    @GetMapping("/{id}")
-    public UserDto getUser (@PathVariable int id){
-      return null;
-    }
-    @PostMapping("")
-    public UserDto addUser (@RequestBody UserDto user){
-      return null;
-    }
-    @GetMapping("list")
-    public List<UserDto> allUsers(){
-      return null:
-    }
+```java
+@RestController
+@RequestMapping("user")
+public class UserController {
+  @GetMapping("/{id}")
+  public UserDto getUser (@PathVariable int id){
+    return null;
   }
-  ```
+  @PostMapping("")
+  public UserDto addUser (@RequestBody UserDto user){
+    return null;
+  }
+  @GetMapping("list")
+  public List<UserDto> allUsers(){
+    return null:
+  }
+}
+```
 
 - 业务层开发：
 
@@ -134,23 +134,23 @@ categories:
 
   3. 在 server.impl 包中添加 service 接口的相应实现类，并用@Service 注解
 
-     ```java
-     @Service
-     @Transactional
-     public class UserServiceImpl implements UserServicel {
-       @Autowired
-       UserDao userDao;
-       @Override
-       public List<UserDto> getAllUsers() {
-         List<TuserEntity> tusers=userDao.findAll();
-         return e2d (tusers);
-       }
-       @Override
-       public UserDto getUser (Integer id) {
-        return e2d (userDao.getOne(id));
-       }
-     }
-     ```
+```java
+@Service
+@Transactional
+public class UserServiceImpl implements UserServicel {
+  @Autowired
+  UserDao userDao;
+  @Override
+  public List<UserDto> getAllUsers() {
+    List<TuserEntity> tusers=userDao.findAll();
+    return e2d (tusers);
+  }
+  @Override
+  public UserDto getUser (Integer id) {
+   return e2d (userDao.getOne(id));
+  }
+}
+```
 
   4. 在 dto 包中添加需要的 dto 类
 
@@ -160,24 +160,24 @@ categories:
   2. 在 dao 包中新建 dao 接口，继承 JpaRepository
   3. 在 entity 包中添加需要的实体类映射
 
-  ```java
-  @Setter
-  @Getter
-  @Entity
-  @Table (name = "tuser",schema = "test", catalog = "")
-  public class TuserEntity {
-    @Id
-    private Integer id;
-    @Column
-    private String name;
-    @Column
-    private String password;
-    @Column
-    private String email;
-    @Column
-    private String mobile;
-  }
-  ```
+```java
+@Setter
+@Getter
+@Entity
+@Table (name = "tuser",schema = "test", catalog = "")
+public class TuserEntity {
+  @Id
+  private Integer id;
+  @Column
+  private String name;
+  @Column
+  private String password;
+  @Column
+  private String email;
+  @Column
+  private String mobile;
+}
+```
 
 #### 与 Spring 关系
 
@@ -197,44 +197,44 @@ categories:
 
   - pom 中添加依赖（swagger、swagger-ui）
 
-    ```xml
-    <dependency>
-      <groupId>io.springfox</groupId>
-      <artifactId>springfox-swagger2</artifactId>
-      <version>2.9.2</version>
-    </dependency>
-    <dependency>
-      <groupId>io.springfox</groupId>
-      <artifactId>springfox-swagger-ui</artifactId>
-      <version>2.9.2</version>
-    </dependency>
-    ```
+```xml
+<dependency>
+  <groupId>io.springfox</groupId>
+  <artifactId>springfox-swagger2</artifactId>
+  <version>2.9.2</version>
+</dependency>
+<dependency>
+  <groupId>io.springfox</groupId>
+  <artifactId>springfox-swagger-ui</artifactId>
+  <version>2.9.2</version>
+</dependency>
+```
 
   - 新建 config 包，其中新建 SwaggerConfig 类，类上注解@Configuration、@EnableSwagger2
 
-    ```java
-    @Configuration
-    public class Knife4jConfig {
-      @Bean
-      public  Docket createRestApi() {
-        return  new Docket(DocumentationType.SWAGGER_2)
-          .useDefaultResponseMessages(false)
-          .apiInfo(apiInfo())
-          .select()
-          .apis(RequestHandlerSelectors.basePackage("com.example.springbootp1.controller"))
-          .paths(PathSelectors.any())
-          .build();
-      }
-      private ApiInfo apiInfo() {
-        return  new ApiInfoBuilder()
-          .description("接口测试文档")
-          .contact(new Contact("Whiskey", "https://zhuchj.com","825906196@qq.com"))
-          .version("1.0.0")
-          .description("测试API")
-          .build();
-      }
-    }
-    ```
+```java
+@Configuration
+public class Knife4jConfig {
+  @Bean
+  public  Docket createRestApi() {
+    return  new Docket(DocumentationType.SWAGGER_2)
+      .useDefaultResponseMessages(false)
+      .apiInfo(apiInfo())
+      .select()
+      .apis(RequestHandlerSelectors.basePackage("com.example.springbootp1.controller"))
+      .paths(PathSelectors.any())
+      .build();
+  }
+  private ApiInfo apiInfo() {
+    return  new ApiInfoBuilder()
+      .description("接口测试文档")
+      .contact(new Contact("Whiskey", "https://zhuchj.com","825906196@qq.com"))
+      .version("1.0.0")
+      .description("测试API")
+      .build();
+  }
+}
+```
 
   - swagger 注解
 
@@ -249,35 +249,35 @@ categories:
 
     - @ApiParam("")：在方法参数前注解，说明该参数含义
 
-    ```java
-      @Api(tags="用户管理模块接口")
-      @RestController
-      @RequestMapping("user")
-      public class UserController {
-        @Autowired
-        UserServicel userService;
-        @ApiOperation(valve = "单个用户", notes="根据ID获取用户信息")
-        @GetMapping("/(id}")
-        public UserDto getUser (@ApiParam ("用户ID") @PathVariable int id) {
-          return userService-getUser(id);
-        }
-        ...
-      }
-    ```
+```java
+  @Api(tags="用户管理模块接口")
+  @RestController
+  @RequestMapping("user")
+  public class UserController {
+    @Autowired
+    UserServicel userService;
+    @ApiOperation(valve = "单个用户", notes="根据ID获取用户信息")
+    @GetMapping("/(id}")
+    public UserDto getUser (@ApiParam ("用户ID") @PathVariable int id) {
+      return userService-getUser(id);
+    }
+    ...
+  }
+```
 
     - @ApiModel：注解在 Dto 类上，说明 Dto 的用途
 
       - @ApiModelProperty：注解在 Dto 类的字段上，说明该参数的含义
 
-        ```java
-         @Data
-         @ApiModel("系统用户")
-         public class UserDto {
-           @ApiModelProperty("用户ID")
-           private Integer id;
-           ...
-         }
-        ```
+```java
+ @Data
+ @ApiModel("系统用户")
+ public class UserDto {
+   @ApiModelProperty("用户ID")
+   private Integer id;
+   ...
+ }
+```
 
 #### 多模块 Maven 项目架构（父子模块操作）
 
@@ -289,14 +289,14 @@ categories:
 
   - 在 parent 项目添加 modules
 
-    ```xml
-    <modules>
-      <module>common</module>
-      <module>user</module>
-      <module>course</module>
-      ...
-    </modules>
-    ```
+```xml
+<modules>
+  <module>common</module>
+  <module>user</module>
+  <module>course</module>
+  ...
+</modules>
+```
 
   - 新增模块（子项目，模块 pom 改为父项目 parent 的 GAV）
 
@@ -304,7 +304,7 @@ categories:
 
 #### 微服务架构
 
-![图片6](imgs/图片 6.png)
+![microservice-layers](imgs/microservice-layers.png)
 
 - **服务治理**：服务治理就是进行服务的自动化管理，其核心是服务的自动注册与发现。
 
@@ -397,7 +397,7 @@ categories:
 
 #### Dubbo 架构理解
 
-![图片10](imgs/图片 10.png)
+![dubbo-architecture](imgs/dubbo-architecture.png)
 
 - **Provider** ：服务提供者。
 - **Consumer** ：服务消费者。
@@ -414,54 +414,54 @@ categories:
 
   - Service 注解
 
-    ```java
-    import org.apache.dubbo.config.annotation.Service;
-    @Service(version = "${hello.service.version}",application="${dubbo.application.id}")
-    ```
+```java
+import org.apache.dubbo.config.annotation.Service;
+@Service(version = "${hello.service.version}",application="${dubbo.application.id}")
+```
 
   - 启动类注解
 
-    ```java
-    @EnableDubbo
-    @SpringBootApplicaiton
-    public class DubboHelloworldApplication {
-      ...
-    }
-    ```
+```java
+@EnableDubbo
+@SpringBootApplicaiton
+public class DubboHelloworldApplication {
+  ...
+}
+```
 
 - 服务消费者
 
   - Reference 注解
 
-    ```java
-    import org.apache.dubbo.config.annotation.Reference;
-    @Reference(version = "${hello.service.version}")
-    ```
+```java
+import org.apache.dubbo.config.annotation.Reference;
+@Reference(version = "${hello.service.version}")
+```
 
   - 启动类注解
 
-    ```java
-    @EnableDubbo
-    @SpringBootApplicaiton
-    public class DubboHelloworldRestApplication {
-      ...
-    }
-    ```
+```java
+@EnableDubbo
+@SpringBootApplicaiton
+public class DubboHelloworldRestApplication {
+  ...
+}
+```
 
 #### Dubbo 微服务的开发部署与测试
 
 - 下载、创建 zookeeper 镜像和容器
 
-  ```
-  docker pull zookeeper:3.6.0
-  docker run –d --name zookeeper –p 2181:2181 --net testnet zookeeper:3.6.0
-  ```
+```
+docker pull zookeeper:3.6.0
+docker run –d --name zookeeper –p 2181:2181 --net testnet zookeeper:3.6.0
+```
 
 - 下载、创建 dubbo-admin 镜像和容器
 
-  ```
-  docker pull apache/dubbo-admin
-  ```
+```
+docker pull apache/dubbo-admin
+```
 
 - 添加依赖
 
@@ -471,43 +471,43 @@ categories:
 
 - dubbo 服务提供者配置（application.properties）
 
-  ```properties
-  # dubbo
-  # Base packages to scan Dubbo Components (e.g @Service , @Reference)
-  dubbo.scan.basePackages = se.zust.edu.dubbohelloworld.service
+```properties
+# dubbo
+# Base packages to scan Dubbo Components (e.g @Service , @Reference)
+dubbo.scan.basePackages = se.zust.edu.dubbohelloworld.service
 
-  # Dubbo Config properties
-  hello.service.version=1.0.0
-  ## ApplicationConfig Bean
-  dubbo.application.id = helloworld-provider
-  dubbo. application.name = helloworld-provider
+# Dubbo Config properties
+hello.service.version=1.0.0
+## ApplicationConfig Bean
+dubbo.application.id = helloworld-provider
+dubbo. application.name = helloworld-provider
 
-  ## ProtocolConfig Bean
-  dubbo.protocol.id = dubbo
-  dubbo.protocol.name = dubbo
-  dubbo.protocol.port = 11245
+## ProtocolConfig Bean
+dubbo.protocol.id = dubbo
+dubbo.protocol.name = dubbo
+dubbo.protocol.port = 11245
 
-  ## RegistryConfig Bean
-  dubbo.registry.id = zk-helloworld-provider
-  #dubbo.registry.address = N/A
-  # zookeeper
-  dubbo.registry.protocol = zookeeper
-  dubbo.registry.address = 127.0.0.1:2181
-  ```
+## RegistryConfig Bean
+dubbo.registry.id = zk-helloworld-provider
+#dubbo.registry.address = N/A
+# zookeeper
+dubbo.registry.protocol = zookeeper
+dubbo.registry.address = 127.0.0.1:2181
+```
 
 - dubbo 服务消费者配置（application.properties）
 
-  ```properties
-  hello.service.version = 1.0.0
-  # application.name
-  dubbo.application.name=hello-service-comsumer
-  # address
-  dubbo.registry.address = zookeeper://127.0.0.1:2181
-  ```
+```properties
+hello.service.version = 1.0.0
+# application.name
+dubbo.application.name=hello-service-comsumer
+# address
+dubbo.registry.address = zookeeper://127.0.0.1:2181
+```
 
 - 多模块改造
 
-  ![图片8](imgs/图片 8.png)
+![multi-module-pom](imgs/multi-module-pom.png)
 
 #### Springboot 与 SpringCloud 的关系
 
@@ -528,22 +528,22 @@ categories:
 
 - 在 RestTemplate 的生成方法上添加@LoadBalanced 注解
 
-  ```java
-  @Bean
-  @LoadBalanced
-  public RestTemplate restTemplate() {
-      return new RestTemplate();
-  }
-  ```
+```java
+@Bean
+@LoadBalanced
+public RestTemplate restTemplate() {
+    return new RestTemplate();
+}
+```
 
 - 修改服务调用的方法
 
-  ```java
-  // 直接使用微服务名字， 从nacos中获取服务地址
-  String url = "service-product";
-  // 通过restTemplate调用商品微服务
-  Product product = restTemplate.getForObject...
-  ```
+```java
+// 直接使用微服务名字， 从nacos中获取服务地址
+String url = "service-product";
+// 通过restTemplate调用商品微服务
+Product product = restTemplate.getForObject...
+```
 
 ##### Hystrix
 
@@ -556,36 +556,36 @@ REST 客户端，目的是为了简化 WebService 客户端的开发
 - 默认集成了 Ribbon、Hystrix
 - 加入 Fegin 的依赖
 
-  ```xml
-  <!--fegin组件-->
-  <dependency>
-    <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-starter-openfeign</artifactId>
-  </dependency>
-  ```
+```xml
+<!--fegin组件-->
+<dependency>
+  <groupId>org.springframework.cloud</groupId>
+  <artifactId>spring-cloud-starter-openfeign</artifactId>
+</dependency>
+```
 
 - 主类加上注解
 
-  ```java
-  @SpringBootApplication
-  @EnableDiscoveryClient
-  //开启Fegin
-  @EnableFeignClients
-  public class OrderApplication {}
-  ```
+```java
+@SpringBootApplication
+@EnableDiscoveryClient
+//开启Fegin
+@EnableFeignClients
+public class OrderApplication {}
+```
 
 - 创建一个 service， 并使用 Fegin 实现微服务调用
 
-  ```java
-  @FeignClient("service-product")
-  //声明调用的提供者的name
-  public interface ProductService {
-  //指定调用提供者的哪个方法
-  //@FeignClient+@GetMapping 就是一个完整的请求路径 http://service- product/product/{pid}
-      @GetMapping(value = "/product/{pid}")
-      Product findByPid(@PathVariable("pid") Integer pid);
-  }
-  ```
+```java
+@FeignClient("service-product")
+//声明调用的提供者的name
+public interface ProductService {
+//指定调用提供者的哪个方法
+//@FeignClient+@GetMapping 就是一个完整的请求路径 http://service- product/product/{pid}
+    @GetMapping(value = "/product/{pid}")
+    Product findByPid(@PathVariable("pid") Integer pid);
+}
+```
 
 - 修改 controller 代码，并重启微服务验证
 
@@ -605,29 +605,29 @@ REST 客户端，目的是为了简化 WebService 客户端的开发
 
 - 添加依赖
 
-  ```java
-  <artifactId>spring-cloud-starter-gateway</artifactId>
-  ```
+```java
+<artifactId>spring-cloud-starter-gateway</artifactId>
+```
 
 - 创建主类，添加配置文件
 
-  ```properties
-  server:
-    port: 7000
-  spring:
-    application:
-      name: api-gateway
-    cloud:
-  gateway:
-    routes: # 路由数组[路由 就是指定当请求满足什么条件的时候转到哪个微服务]
-      - id: product_route # 当前路由的标识, 要求唯一
-        uri: http://localhost:8081 # 请求要转发到的地址
-        order: 1 # 路由的优先级,数字越小级别越高
-        predicates: # 断言(就是路由转发要满足的条件)
-          - Path=/product-serv/** # 当请求路径满足Path指定的规则时,才进行路由转发
-        filters: # 过滤器,请求在传递过程中可以通过过滤器对其进行一定的修改
-          - StripPrefix=1 # 转发之前去掉1层路径
-  ```
+```properties
+server:
+  port: 7000
+spring:
+  application:
+    name: api-gateway
+  cloud:
+gateway:
+  routes: # 路由数组[路由 就是指定当请求满足什么条件的时候转到哪个微服务]
+    - id: product_route # 当前路由的标识, 要求唯一
+      uri: http://localhost:8081 # 请求要转发到的地址
+      order: 1 # 路由的优先级,数字越小级别越高
+      predicates: # 断言(就是路由转发要满足的条件)
+        - Path=/product-serv/** # 当请求路径满足Path指定的规则时,才进行路由转发
+      filters: # 过滤器,请求在传递过程中可以通过过滤器对其进行一定的修改
+        - StripPrefix=1 # 转发之前去掉1层路径
+```
 
 - 启动项目通过网关访问服务
 
@@ -664,9 +664,9 @@ spring:
 
   - 新建 POM 类型的父项目
 
-    ```
-    <packaging>pom</packaging>
-    ```
+```
+<packaging>pom</packaging>
+```
 
   - 在父项目中添加如下模块项目
 
@@ -678,27 +678,27 @@ spring:
 
   - 启动类前注解@EnableEurekaServer
 
-    ```java
-    @SpringBootApplication
-    @EnableEurekaServer
-    public class CloudDemoServerApplication {
-      ...
-    }
-    ```
+```java
+@SpringBootApplication
+@EnableEurekaServer
+public class CloudDemoServerApplication {
+  ...
+}
+```
 
   - 新建配置文件 application.yml
 
-    ```properties
-    eureka:
-      client:
-        service-url:
-          defaultZone: http://localhost:8761/eureka
-    spring:
-      application:
-        name: eureka
-    server:
-      port: 8761
-    ```
+```properties
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+spring:
+  application:
+    name: eureka
+server:
+  port: 8761
+```
 
   - 运行 Eureka 服务器，测试访问
 
@@ -710,27 +710,27 @@ spring:
 
   - 启动类前注解@EnableDiscoveryClient（@EnableEurekaClient）
 
-    ```java
-    @SpringBootApplication
-    @EnableDiscoveryClient
-    public class CloudDemoClient1Application {
-      ...
-    }
-    ```
+```java
+@SpringBootApplication
+@EnableDiscoveryClient
+public class CloudDemoClient1Application {
+  ...
+}
+```
 
   - 新建配置文件 application.yml
 
-    ```properties
-    eureka:
-      client:
-        service-url:
-          defaultZone: http://localhost:8761/eureka
-    spring:
-      application:
-        name: springcloud-service1 # 服务提供方名称
-    server:
-      port: 2222 #服务端口
-    ```
+```properties
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+spring:
+  application:
+    name: springcloud-service1 # 服务提供方名称
+server:
+  port: 2222 #服务端口
+```
 
   - 业务功能开发：与 springboot 开发一致
 
@@ -744,38 +744,38 @@ spring:
 
     - 客户端访问配置 RestTemplate 调用 / Feign 客户端（二选一即可，也可以同时存在）
 
-    ```java
-    @SpringBootApplication
-    @EnableDiscoveryClient
-    // 两种方式访问微服务
-    // 1、通过Feign客户端访问
-    @EnableFeignClients
-    public class SpringcloudDemoClient3Application {
-      // 2、通过RestTemplate访问
-      @Bean
-      @LoadBalanced
-      RestTemplate restTemplate() {
-        return new RestTemplate();
-      }
-      public static void main(String[] args) {
-        ...
-      }
-    }
-    ```
+```java
+@SpringBootApplication
+@EnableDiscoveryClient
+// 两种方式访问微服务
+// 1、通过Feign客户端访问
+@EnableFeignClients
+public class SpringcloudDemoClient3Application {
+  // 2、通过RestTemplate访问
+  @Bean
+  @LoadBalanced
+  RestTemplate restTemplate() {
+    return new RestTemplate();
+  }
+  public static void main(String[] args) {
+    ...
+  }
+}
+```
 
   - 配置文件
 
-    ```properties
-    eureka:
-      client:
-        service-url:
-          defaultZone: http://localhost:8761/eureka
-    spring:
-      application:
-        name: springcloud-client1
-    server:
-      port: 5555 #消费者端口
-    ```
+```properties
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+spring:
+  application:
+    name: springcloud-client1
+server:
+  port: 5555 #消费者端口
+```
 
   - 业务功能开发 1：FeignClient 方式调用微服务
 
@@ -783,29 +783,29 @@ spring:
 
     - 新建 service 包，添加功能接口
 
-      ```java
-      @FeignClient("springcloud-service1")
-      public interface FeignUserService {
-        @RequestMapping(value = "/user/{id}", method = RequestMethod.GET)
-        public UserDto getUser(@PathVariable int id);
-        @RequestMapping(value = "/user", method = RequestMethod.POST)
-        public UserDto addUSer(@RequestParam int id, @RequestParam int name);
-      }
-      ```
+```java
+@FeignClient("springcloud-service1")
+public interface FeignUserService {
+  @RequestMapping(value = "/user/{id}", method = RequestMethod.GET)
+  public UserDto getUser(@PathVariable int id);
+  @RequestMapping(value = "/user", method = RequestMethod.POST)
+  public UserDto addUSer(@RequestParam int id, @RequestParam int name);
+}
+```
 
     - 新建 controller 包，添加 controller 类
 
-      ```java
-      @RestController
-      @RequestMapping("/user")
-      public class UserAccessController {
-        @Autowired
-        FeignUserService userService;
-        public UserDto getUser(int id) {
-          return userService.getUser(id);
-        }
-      }
-      ```
+```java
+@RestController
+@RequestMapping("/user")
+public class UserAccessController {
+  @Autowired
+  FeignUserService userService;
+  public UserDto getUser(int id) {
+    return userService.getUser(id);
+  }
+}
+```
 
   - 业务功能开发 2：RestTemplate 方式调用微服务
 
@@ -813,25 +813,25 @@ spring:
 
     - 通过 restTemplate.getForObject 方法调用服务端接口
 
-      ```java
-      @RestController
-      @RequestMapping("/user")
-      public class UserAccessController {
-        @Autowired
-        FeignUserService userService;
-        @Autowired
-        RestTemplate restTemplate;
-        @RequestMapping("/{id}")
-        public UserDto getUser(@PathVariable int id) {
-          return userService.getUser(id);
-        }
-        @RequestMapping("/template/{id}")
-        public UserDto getUserTemplate(@PathVariable int id) {
-          // 通过服务名字访问api
-          return restTemplate.getForObject("http://springcloud-service1/user/" + id, UserDto.class)
-        }
-      }
-      ```
+```java
+@RestController
+@RequestMapping("/user")
+public class UserAccessController {
+  @Autowired
+  FeignUserService userService;
+  @Autowired
+  RestTemplate restTemplate;
+  @RequestMapping("/{id}")
+  public UserDto getUser(@PathVariable int id) {
+    return userService.getUser(id);
+  }
+  @RequestMapping("/template/{id}")
+  public UserDto getUserTemplate(@PathVariable int id) {
+    // 通过服务名字访问api
+    return restTemplate.getForObject("http://springcloud-service1/user/" + id, UserDto.class)
+  }
+}
+```
 
     - 运行启动类，测试新接口
 
@@ -892,7 +892,7 @@ spring:
 
 #### Docker 常用命令（mysql、日志、端口映射）
 
-![图片7](imgs/图片 7.png)
+![docker-lifecycle](imgs/docker-lifecycle.png)
 
 ##### 容器使用
 
@@ -931,9 +931,9 @@ docker run --name tomcat -p 8081:8080 -d tomcat
 
 - docker build（Dockerfile）：构建镜像
 
-  ```
-  docker build -t runoob/centos:6.7 .
-  ```
+```
+docker build -t runoob/centos:6.7 .
+```
 
   - **-t** ：指定要创建的目标镜像名
   - **.** ：Dockerfile 文件所在目录，可以指定 Dockerfile 的绝对路径
@@ -948,28 +948,28 @@ docker run --name tomcat -p 8081:8080 -d tomcat
 
   - -p : 是容器内部端口绑定到指定的主机端口
 
-    ```
-    docker run -d -p 127.0.0.1:5000:5000/udp
-    ```
+```
+docker run -d -p 127.0.0.1:5000:5000/udp
+```
 
 - 新建网络
 
-  ```
-  docker network create -d bridge test-net
-  ```
+```
+docker network create -d bridge test-net
+```
 
 - 连接容器
 
-  ```
-  docker run -itd --name test1 --network test-net ubuntu /bin/bash
-  docker run -itd --name test2 --network test-net ubuntu /bin/bash
-  ```
+```
+docker run -itd --name test1 --network test-net ubuntu /bin/bash
+docker run -itd --name test2 --network test-net ubuntu /bin/bash
+```
 
 - 指定容器配置
 
-  ```
-  docker run -it --rm -h host_ubuntu  --dns=114.114.114.114 --dns-search=test.com ubuntu
-  ```
+```
+docker run -it --rm -h host_ubuntu  --dns=114.114.114.114 --dns-search=test.com ubuntu
+```
 
   --rm：容器退出时自动清理容器内部的文件系统。
 
@@ -995,46 +995,46 @@ docker run --name tomcat -p 8081:8080 -d tomcat
 - ftp 工具将 jar 包传至 docker 主机(scp)
 - 编写 Dockerfile（FROM，指定使用哪个镜像源；RUN 指令告诉 docker 在镜像内执行命令，安装了什么）
 
-  ```
-  ARG BUILD_FROM=arm64v8
-  FROM ubuntu:16.04
-  MAINTAINER whiskeyi
-  VOLUME ["/opt/jdk"]
-  ADD ./jdk8.tar.gz /opt/jdk
-  ENV JAVA_HOME /opt/jdk/jdk1.8.0_144
-  ENV CLASSPATH $JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
-  ENV PATH $JAVA_HOME/bin:$PATH
-  ```
+```
+ARG BUILD_FROM=arm64v8
+FROM ubuntu:16.04
+MAINTAINER whiskeyi
+VOLUME ["/opt/jdk"]
+ADD ./jdk8.tar.gz /opt/jdk
+ENV JAVA_HOME /opt/jdk/jdk1.8.0_144
+ENV CLASSPATH $JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+ENV PATH $JAVA_HOME/bin:$PATH
+```
 
 - 制作镜像，上传镜像仓库
 
   - 打包镜像
 
-    ```
-    docker build –t springboottest:1.0 .
-    ```
+```
+docker build –t springboottest:1.0 .
+```
 
   - Tag 重命名（生成一个新的 image 引用）
 
-    ```
-    docker tag springboottest:1.0 registry.cn-hangzhou.aliyuncs.com/edu_zust/springboottest:1.0
-    ```
+```
+docker tag springboottest:1.0 registry.cn-hangzhou.aliyuncs.com/edu_zust/springboottest:1.0
+```
 
   - 上传阿里云私有仓库
 
-    ```
-    登录：docker login --username=****** registry.cn-hangzhou.aliyuncs.com
-    docker push registry.cn-hangzhou.aliyuncs.com/edu_zust/springboottest:1.0
-    ```
+```
+登录：docker login --username=****** registry.cn-hangzhou.aliyuncs.com
+docker push registry.cn-hangzhou.aliyuncs.com/edu_zust/springboottest:1.0
+```
 
 - 创建 docker 网络 docker network create mynet
 - 创建容器
 
   - mysql
 
-    ```
-    docker run -d --name mysql -p 3336:3306 -e MYSQL_ROOT_PASSWORD=123456 --net mynet mysql:5.7
-    ```
+```
+docker run -d --name mysql -p 3336:3306 -e MYSQL_ROOT_PASSWORD=123456 --net mynet mysql:5.7
+```
 
 - 容器部署
 
@@ -1042,16 +1042,16 @@ docker run --name tomcat -p 8081:8080 -d tomcat
 
   - 在部署主机上拉取镜像
 
-    ```
-    docker pull registry.cn-hangzhou.aliyuncs.com/edu_zust/springboottest:1.0
-    docker tag registry.cn-hangzhou.aliyuncs.com/edu_zust/springboottest:1.0 springboottest:v1
-    ```
+```
+docker pull registry.cn-hangzhou.aliyuncs.com/edu_zust/springboottest:1.0
+docker tag registry.cn-hangzhou.aliyuncs.com/edu_zust/springboottest:1.0 springboottest:v1
+```
 
   - 运行镜像
 
-    ```
-    docker run –d –name test-app –p 8080:8080 –network mynet springboottest:v1
-    ```
+```
+docker run –d –name test-app –p 8080:8080 –network mynet springboottest:v1
+```
 
   - 打开浏览器，通过部署主机 ip 的 8080 访问容器中的 web，进行功能测试
 
@@ -1140,19 +1140,19 @@ OAuth 为客户端提供了一种代表资源拥有者访问受保护资源的�
 
 - 通过 jax 客户端调用 web 服务，分析返回的结果
 
-  ```java
-  // 创建web服务客户端
-  JaxWsDynamicClientFactory dcf = JaxWsDynamicClientFactory.newInstance();
-  Clinet client = dcf.createClient("air.wsdl");
-  Object[] objects;
-  try {
-    // 调用web服务
-    objects = client.invoke("getDomesticAirlinesTime", ...);
-    // 处理服务返回的结果（提取结果xml字符串）
-    String xmlStr = JSON.toJSONString(objects);
-    System.out.printIn(xmlStr);
-  }
-  ```
+```java
+// 创建web服务客户端
+JaxWsDynamicClientFactory dcf = JaxWsDynamicClientFactory.newInstance();
+Clinet client = dcf.createClient("air.wsdl");
+Object[] objects;
+try {
+  // 调用web服务
+  objects = client.invoke("getDomesticAirlinesTime", ...);
+  // 处理服务返回的结果（提取结果xml字符串）
+  String xmlStr = JSON.toJSONString(objects);
+  System.out.printIn(xmlStr);
+}
+```
 
 - 提取结果 xml，通过 dom4j 解析
 

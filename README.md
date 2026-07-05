@@ -26,7 +26,7 @@ Edit this file to change the site name, author, metadata, production URL, naviga
 Common fields to update first:
 
 - `name`, `title`, `author`, `description`, and `url`
-- `links.github` and `links.email`
+- `links.github`
 - `navigation`
 - `home.heroImages`, `home.heroTitle`, and `home.feedDescription`
 - `about.description`, `about.heroImage`, and `about.timeline`

@@ -340,8 +340,161 @@
   font-size: 0.84rem;
 }
 
+.article-toc a[data-depth="5"] {
+  padding-left: 46px;
+  font-size: 0.82rem;
+}
+
 .article-content {
   min-width: 0;
+}
+
+.article-standard .article-hero {
+  min-height: min(46vh, 500px);
+  padding: 112px 24px 48px;
+}
+
+.article-standard .article-hero-no-cover {
+  min-height: min(38vh, 400px);
+}
+
+.article-standard .article-hero-image::after {
+  background:
+    linear-gradient(90deg, rgba(8, 11, 14, 0.52) 0%, rgba(8, 11, 14, 0.2) 56%, rgba(8, 11, 14, 0.06) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(8, 11, 14, 0.34));
+}
+
+.article-standard .article-hero-content {
+  width: min(860px, 100%);
+  margin: 0 auto;
+}
+
+.article-standard .article-hero[data-cover-orientation="portrait"] .article-hero-content,
+.article-standard .article-hero[data-cover-orientation="square"] .article-hero-content {
+  width: min(58vw, 700px);
+  margin: 0;
+}
+
+.article-standard .article-hero-content h1 {
+  max-width: 860px;
+  margin-top: 16px;
+  font-size: clamp(2.2rem, 4.8vw, 4.85rem);
+  line-height: 1.08;
+}
+
+.article-standard .article-hero-content > p {
+  max-width: 720px;
+  margin: 18px 0 0;
+  color: var(--article-muted);
+  font-size: 1.08rem;
+  line-height: 1.78;
+}
+
+.article-standard .article-hero-with-cover .article-hero-content > p {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.article-standard .article-layout {
+  grid-template-columns: minmax(168px, 220px) minmax(0, 740px);
+  gap: 52px;
+  width: min(1060px, calc(100% - 48px));
+  padding: 64px 0 104px;
+}
+
+.article-standard .article-layout:has(.article-toc[data-collapsed="true"]) {
+  grid-template-columns: 40px minmax(0, 740px);
+  gap: 30px;
+}
+
+.article-standard .article-content {
+  width: 100%;
+}
+
+.article-standard .markdown-body {
+  font-size: calc(1.05rem * var(--reader-scale, 1));
+  line-height: 1.8;
+  hanging-punctuation: first last;
+}
+
+.article-standard .markdown-body h1,
+.article-standard .markdown-body h2,
+.article-standard .markdown-body h3,
+.article-standard .markdown-body h4,
+.article-standard .markdown-body h5 {
+  margin-top: 2.2em;
+  margin-bottom: 0.68em;
+  line-height: 1.24;
+}
+
+.article-standard .markdown-body h2 {
+  padding-top: 0.92em;
+  border-top: 1px solid color-mix(in srgb, var(--line), transparent 20%);
+}
+
+.article-standard .markdown-body h2:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.article-standard .markdown-body h1 {
+  font-size: 2.18rem;
+}
+
+.article-standard .markdown-body h2 {
+  font-size: 1.78rem;
+}
+
+.article-standard .markdown-body h3 {
+  font-size: 1.32rem;
+}
+
+.article-standard .markdown-body h4 {
+  font-size: 1.08rem;
+}
+
+.article-standard .markdown-body h5 {
+  font-size: 1rem;
+}
+
+.article-standard .markdown-body p,
+.article-standard .markdown-body ul,
+.article-standard .markdown-body ol,
+.article-standard .markdown-body blockquote,
+.article-standard .markdown-body table {
+  margin: 0.86em 0;
+}
+
+.article-standard .markdown-body ul,
+.article-standard .markdown-body ol {
+  padding-left: 1.35em;
+}
+
+.article-standard .markdown-body li + li {
+  margin-top: 0.28em;
+}
+
+.article-standard .markdown-body blockquote {
+  padding: 12px 0 12px 18px;
+}
+
+.article-standard .code-frame,
+.article-standard .article-image-button {
+  width: 100%;
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.article-standard .code-frame pre {
+  padding: 22px 60px 22px 22px;
+}
+
+.article-standard .article-image-button {
+  background: color-mix(in srgb, var(--glass), transparent 34%);
+  border: 1px solid color-mix(in srgb, var(--line), transparent 24%);
+}
+
+.article-standard .article-image-button img {
+  max-height: min(760px, 82vh);
 }
 
 .article-neighbor-nav {
@@ -423,7 +576,7 @@
   color: var(--article-text);
   font-family: var(--font-serif);
   font-size: calc(1.08rem * var(--reader-scale, 1));
-  line-height: 1.88;
+  line-height: 1.78;
   text-wrap: pretty;
 }
 
@@ -434,12 +587,13 @@
 .markdown-body h1,
 .markdown-body h2,
 .markdown-body h3,
-.markdown-body h4 {
+.markdown-body h4,
+.markdown-body h5 {
   position: relative;
   color: var(--article-heading);
-  margin: 2.4em 0 0.75em;
+  margin: 2.05em 0 0.62em;
   font-family: var(--font-sans);
-  line-height: 1.22;
+  line-height: 1.18;
   scroll-margin-top: 110px;
 }
 
@@ -460,6 +614,10 @@
   font-size: 1.18rem;
 }
 
+.markdown-body h5 {
+  font-size: 1.02rem;
+}
+
 .heading-anchor {
   margin-left: 8px;
   color: var(--article-accent);
@@ -470,7 +628,8 @@
 .markdown-body h1:hover .heading-anchor,
 .markdown-body h2:hover .heading-anchor,
 .markdown-body h3:hover .heading-anchor,
-.markdown-body h4:hover .heading-anchor {
+.markdown-body h4:hover .heading-anchor,
+.markdown-body h5:hover .heading-anchor {
   opacity: 1;
 }
 
@@ -479,7 +638,7 @@
 .markdown-body ol,
 .markdown-body blockquote,
 .markdown-body table {
-  margin: 1.12em 0;
+  margin: 0.92em 0;
 }
 
 .markdown-body p,
@@ -488,7 +647,7 @@
 }
 
 .markdown-body li + li {
-  margin-top: 0.35em;
+  margin-top: 0.24em;
 }
 
 .markdown-body strong {
@@ -538,13 +697,21 @@
   border: 0;
 }
 
+.markdown-body figure {
+  margin: 1.12em 0;
+}
+
 .code-frame {
   position: relative;
-  margin: 1.4em 0;
+  margin: 1.12em 0;
   overflow: hidden;
   background: var(--code-bg);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius);
+}
+
+.markdown-body figure .code-frame {
+  margin: 0;
 }
 
 .code-frame pre {
@@ -559,7 +726,7 @@
 
 .markdown-body hr {
   height: 1px;
-  margin: 2.2em 0;
+  margin: 1.8em 0;
   background: var(--line);
   border: 0;
 }
@@ -603,7 +770,7 @@
 .article-image-button {
   display: block;
   width: 100%;
-  margin: 1.4em 0;
+  margin: 1.12em 0;
   padding: 0;
   overflow: hidden;
   cursor: zoom-in;
@@ -628,15 +795,47 @@
   place-items: center;
   padding: 28px;
   cursor: zoom-out;
-  background: rgba(9, 12, 16, 0.74);
-  backdrop-filter: blur(18px);
+  isolation: isolate;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 36%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(16, 20, 25, 0.18)),
+    rgba(9, 12, 16, 0.1);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  animation: lightbox-glass-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.image-lightbox::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06), transparent 30%, rgba(255, 255, 255, 0.03) 72%, transparent),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 18%);
+  opacity: 0.22;
+}
+
+:root[data-theme="dark"] .image-lightbox {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.07), transparent 36%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(3, 5, 8, 0.18)),
+    rgba(3, 5, 8, 0.18);
+}
+
+:root[data-theme="dark"] .image-lightbox::before {
+  opacity: 0.16;
 }
 
 .image-lightbox img {
+  position: relative;
   max-width: min(1180px, 96vw);
   max-height: 90vh;
   border-radius: var(--radius);
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+  box-shadow:
+    0 36px 100px rgba(0, 0, 0, 0.42),
+    0 0 0 1px rgba(255, 255, 255, 0.16);
+  animation: lightbox-image-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .lightbox-close {
@@ -649,9 +848,55 @@
   place-items: center;
   color: #fff;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  isolation: isolate;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 50%;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 12px 36px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  transition: background 160ms ease, transform 160ms ease, border-color 160ms ease;
+}
+
+.lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.36);
+  transform: scale(1.04);
+}
+
+@keyframes lightbox-glass-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes lightbox-image-in {
+  from {
+    opacity: 0;
+    transform: scale(0.975);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image-lightbox,
+  .image-lightbox img {
+    animation: none;
+  }
+
+  .lightbox-close {
+    transition: none;
+  }
 }
 
 .mobile-reader-bar {
@@ -812,4 +1057,9 @@
 .mobile-toc-drawer a[data-depth="4"] {
   margin-left: 24px;
   font-size: 0.98rem;
+}
+
+.mobile-toc-drawer a[data-depth="5"] {
+  margin-left: 36px;
+  font-size: 0.94rem;
 }

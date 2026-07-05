@@ -137,7 +137,7 @@ exports[`ComponentName test case1 for title text 1`] = `
 
 执行`npx jest`，`jest`会自动扫描项目中所有的`__tests__`文件夹，执行内部的用例。
 
-![执行全部用例script](imgs/202302051613526.png)
+![执行全部用例script](imgs/jest-all-tests.png)
 
 如图所示能够看到这次执行用例的具体情况
 
@@ -145,19 +145,19 @@ exports[`ComponentName test case1 for title text 1`] = `
 
 执行`npx jest src/components/button`，`src/components/button`为组件对应的相对路径，当修改了单一组件后为单一组件执行测试用例能大量减少测试时间
 
-![执行指定用例script](imgs/202302051620879.png)
+![执行指定用例script](imgs/jest-specific-test.png)
 
 #### 执行代码覆盖率检测
 
 执行`npx jest --coverage`，会在终端返回此次代码检测覆盖率情况，同时对应在项目根目录生成`coverage`文件夹
-![执行代码覆盖率检测](imgs/202302051621666.png)
+![执行代码覆盖率检测](imgs/jest-coverage-cli.png)
 
 我们可以打开（推荐使用VS Code的`Live Server`插件）`coverage/**/index.html`，在Web端查看对应代码的覆盖率情况
 
 打开的效果如图所示：
 
-![代码覆盖率查看](imgs/202302051625129.png)
+![代码覆盖率查看](imgs/coverage-summary.png)
 
 在这里可以点击进入对应组件查看单行代码执行情况和次数
 
-![执行具体情况](imgs/202302051627248.png)
+![执行具体情况](imgs/coverage-detail.png)

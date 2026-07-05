@@ -19,7 +19,7 @@ categories:
 
 学习了解Preact，能够从原理上进一步了解React
 
-![image-20221130155005229](imgs/image-20221130155005229.png)
+![preact-logo](imgs/preact-logo.png)
 
 链接：https://preactjs.com/
 
@@ -273,7 +273,7 @@ export function useRef(initialValue) {
 
 `useCallback`可以看作`useMemo`的语法糖
 
-![image-20221201170454732](imgs/image-20221201170454732.png)
+![usecallback-memo](imgs/usecallback-memo.png)
 
  #### ReducerHookState
 

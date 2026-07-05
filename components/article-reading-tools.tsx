@@ -12,10 +12,10 @@ const READER_FONT_SCALE = {
   step: 0.04,
   precision: 2
 } as const;
-const ACTIVE_HEADING_OBSERVER_OPTIONS = {
-  rootMargin: "-18% 0px -68% 0px",
-  threshold: [0, 1]
-} satisfies IntersectionObserverInit;
+const ACTIVE_HEADING_OFFSET = 128;
+const ARTICLE_BOTTOM_OFFSET = 24;
+const ACTIVE_TOC_SCROLL_PADDING = 16;
+const TOC_LINK_SELECTOR = ".article-toc a, .mobile-toc-drawer a";
 const READER_BAR_ICON_SIZE = 17;
 const CLOSE_ICON_SIZE = 18;
 
@@ -61,28 +61,78 @@ export function ArticleReadingTools({ headings }: ArticleReadingToolsProps) {
 
     if (!headingElements.length) return;
 
+    const articleBody = document.querySelector(".markdown-body");
+
+    function keepLinkVisible(link: Element) {
+      if (!(link instanceof HTMLElement)) return;
+
+      const container = link.closest<HTMLElement>(".article-toc, .mobile-toc-drawer");
+      if (!container?.clientHeight || container.scrollHeight <= container.clientHeight) return;
+
+      const linkRect = link.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      const topOverflow = linkRect.top - containerRect.top - ACTIVE_TOC_SCROLL_PADDING;
+      const bottomOverflow = linkRect.bottom - containerRect.bottom + ACTIVE_TOC_SCROLL_PADDING;
+
+      if (topOverflow < 0) {
+        container.scrollTop += topOverflow;
+      } else if (bottomOverflow > 0) {
+        container.scrollTop += bottomOverflow;
+      }
+    }
+
     function activate(id: string) {
-      document.querySelectorAll(".article-toc a, .mobile-toc-drawer a").forEach((link) => {
-        link.toggleAttribute("aria-current", link.getAttribute("href") === `#${id}`);
+      document.querySelectorAll(TOC_LINK_SELECTOR).forEach((link) => {
+        if (link.getAttribute("href") === `#${id}`) {
+          link.setAttribute("aria-current", "true");
+          keepLinkVisible(link);
+        } else {
+          link.removeAttribute("aria-current");
+        }
       });
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+    let frameId = 0;
 
-        if (visible?.target.id) activate(visible.target.id);
-      },
-      ACTIVE_HEADING_OBSERVER_OPTIONS
-    );
+    function updateActiveHeading() {
+      frameId = 0;
 
-    headingElements.forEach((heading) => observer.observe(heading));
-    activate(headingElements[0].id);
+      const articleBottom = articleBody?.getBoundingClientRect().bottom ?? document.documentElement.scrollHeight;
+      const reachedArticleBottom = articleBottom <= window.innerHeight + ARTICLE_BOTTOM_OFFSET;
+      const activeHeading = reachedArticleBottom
+        ? headingElements[headingElements.length - 1]
+        : headingElements.reduce((current, heading) => {
+            return heading.getBoundingClientRect().top <= ACTIVE_HEADING_OFFSET ? heading : current;
+          }, headingElements[0]);
 
-    return () => observer.disconnect();
-  }, [headings]);
+      activate(activeHeading.id);
+    }
+
+    function requestActiveHeadingUpdate() {
+      if (frameId) return;
+      frameId = window.requestAnimationFrame(updateActiveHeading);
+    }
+
+    const mutationObserver = new MutationObserver(requestActiveHeadingUpdate);
+    const resizeObserver =
+      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(requestActiveHeadingUpdate);
+
+    window.addEventListener("scroll", requestActiveHeadingUpdate, { passive: true });
+    window.addEventListener("resize", requestActiveHeadingUpdate);
+    window.addEventListener("hashchange", requestActiveHeadingUpdate);
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
+    if (articleBody) resizeObserver?.observe(articleBody);
+    requestActiveHeadingUpdate();
+
+    return () => {
+      if (frameId) window.cancelAnimationFrame(frameId);
+      window.removeEventListener("scroll", requestActiveHeadingUpdate);
+      window.removeEventListener("resize", requestActiveHeadingUpdate);
+      window.removeEventListener("hashchange", requestActiveHeadingUpdate);
+      mutationObserver.disconnect();
+      resizeObserver?.disconnect();
+    };
+  }, [headings, open]);
 
   function changeFont(delta: number) {
     setFontScale((current) =>

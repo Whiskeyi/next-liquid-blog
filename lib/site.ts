@@ -10,6 +10,11 @@ type TimelineItem = {
   points: string[];
 };
 
+type ProfileReadmeItem = {
+  label: string;
+  value: string;
+};
+
 type SiteConfig = {
   name: string;
   title: string;
@@ -35,8 +40,9 @@ type SiteConfig = {
     title: string;
     eyebrow: string;
     heading: string;
-    description: string;
     heroImage: string;
+    profileNote: string;
+    profileReadme: ProfileReadmeItem[];
     timelineEyebrow: string;
     timelineTitle: string;
     timeline: TimelineItem[];
@@ -69,24 +75,29 @@ export const siteConfig = {
     feedTitle: "Latest Notes",
     feedDescription: "围绕前端工程、React、JavaScript 与系统化学习整理的长期笔记。",
     heroImages: [
-      "/img/header_img/27.jpg",
-      "/img/header_img/23.jpg",
-      "/img/header_img/4.jpg",
-      "/img/header_img/11.jpg",
-      "/img/header_img/24.jpg",
-      "/img/header_img/25.jpg",
-      "/img/header_img/33.jpg",
-      "/img/header_img/39.jpg",
-      "/img/header_img/43.jpg"
+      "/img/header_img/blue-wave.jpg",
+      "/img/header_img/star-trails.jpg",
+      "/img/header_img/ocean-shore.jpg",
+      "/img/header_img/ocean-wave.jpg",
+      "/img/header_img/valley-stars.jpg",
+      "/img/header_img/green-beams.jpg",
+      "/img/header_img/city-night.jpg",
+      "/img/header_img/snowy-lake.jpg",
+      "/img/header_img/boat-wake.jpg"
     ]
   },
   about: {
     title: "关于",
     eyebrow: "About",
     heading: "Whiskeyi",
-    description:
-      "一个偏前端工程、React、JavaScript 与系统化学习记录的个人博客，专注把长期实践沉淀成清晰、可阅读的笔记。",
-    heroImage: "/img/header_img/45.jpg",
+    heroImage: "/img/about/avatar.jpg",
+    profileNote: "Keep learning. :)",
+    profileReadme: [
+      {
+        label: "Focus",
+        value: "AI and Full-Stack"
+      }
+    ],
     timelineEyebrow: "Work Timeline",
     timelineTitle: "工作经历",
     timeline: [

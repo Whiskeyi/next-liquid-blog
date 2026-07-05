@@ -11,12 +11,10 @@ export default function AboutPage() {
   return (
     <main className="about-page">
       <section className="about-hero">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={withBasePath(siteConfig.about.heroImage)} alt="" />
         <div className="about-copy">
           <span>{siteConfig.about.eyebrow}</span>
           <h1>{siteConfig.about.heading}</h1>
-          <p>{siteConfig.about.description}</p>
+          <p className="about-note">{siteConfig.about.profileNote}</p>
           <div className="about-actions">
             <a href={siteConfig.links.github} target="_blank" rel="noreferrer">
               <Code2 size={18} />
@@ -27,6 +25,20 @@ export default function AboutPage() {
               Email
             </a>
           </div>
+        </div>
+        <div className="about-profile" aria-label="GitHub profile summary">
+          <figure className="about-portrait" aria-label={`${siteConfig.author} GitHub 头像`}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={withBasePath(siteConfig.about.heroImage)} alt="" width={460} height={460} decoding="async" />
+          </figure>
+          <dl className="about-readme">
+            {siteConfig.about.profileReadme.map((item) => (
+              <div key={item.label}>
+                <dt>{item.label}</dt>
+                <dd>{item.value}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
       <section className="about-timeline" aria-labelledby="work-timeline">

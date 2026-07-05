@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Command } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import type { CSSProperties, KeyboardEvent, MouseEvent } from "react";
 import { glassStyle } from "@/components/glass-style";
 import type { PostMeta } from "@/lib/posts";
@@ -24,6 +25,7 @@ type PostCardProps = {
 
 export function PostCard({ post, index = 0, shortcutActive = false }: PostCardProps) {
   const router = useRouter();
+  const [imageLoaded, setImageLoaded] = useState(false);
   const labels = Array.from(new Set([...post.categories, ...post.tags]));
   const href = `/blog/${post.slug}`;
   const shortcutLabel = getShortcutLabel(index);
@@ -68,12 +70,16 @@ export function PostCard({ post, index = 0, shortcutActive = false }: PostCardPr
       onKeyDown={handleKeyDown}
     >
       {post.hasCover ? (
-        <div className="post-card-media" style={mediaStyle} aria-hidden="true">
+        <div className="post-card-media" style={mediaStyle} data-loaded={imageLoaded} aria-hidden="true">
           <Image
             src={post.cover}
             alt=""
             fill
             sizes={POST_CARD_IMAGE_SIZES}
+            loading={index < 4 ? "eager" : "lazy"}
+            fetchPriority={index < 2 ? "high" : "auto"}
+            decoding="async"
+            onLoad={() => setImageLoaded(true)}
           />
           <div className="post-card-media-shade" />
           <div className="post-index">{shortcut}</div>

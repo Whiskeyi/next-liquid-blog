@@ -180,6 +180,40 @@
     var(--bg-soft);
 }
 
+.post-card-media::before,
+.post-card-media::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+}
+
+.post-card-media::before {
+  z-index: 1;
+  background:
+    linear-gradient(115deg, transparent 24%, rgba(255, 255, 255, 0.32) 42%, transparent 62%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.24), transparent 48%);
+  opacity: 1;
+  transform: translateX(-100%);
+  animation: media-sheen 1400ms ease-in-out infinite;
+  transition: opacity 320ms ease;
+}
+
+.post-card-media::after {
+  z-index: 2;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 36%),
+    linear-gradient(0deg, rgba(12, 18, 23, 0.08), transparent 52%);
+  opacity: 0.58;
+  transition: opacity 420ms ease;
+}
+
+.post-card-media[data-loaded="true"]::before,
+.post-card-media[data-loaded="true"]::after {
+  opacity: 0;
+  animation-play-state: paused;
+}
+
 .post-card[data-cover-orientation="portrait"] .post-card-media {
   aspect-ratio: 4 / 5;
 }
@@ -208,13 +242,19 @@
 
 .post-card-media img {
   object-fit: cover;
+  opacity: 0;
   transform: scale(1.01);
-  transition: transform 360ms ease, filter 180ms ease;
+  transition: opacity 420ms ease, transform 360ms ease, filter 180ms ease;
+}
+
+.post-card-media[data-loaded="true"] img {
+  opacity: 1;
 }
 
 .post-card-media-shade {
   position: absolute;
   inset: 0;
+  z-index: 3;
   pointer-events: none;
   background:
     linear-gradient(180deg, rgba(0, 0, 0, 0.26), transparent 34%),
@@ -323,6 +363,19 @@
     linear-gradient(135deg, rgba(107, 214, 207, 0.18), transparent 58%),
     linear-gradient(315deg, rgba(217, 189, 102, 0.16), transparent 54%),
     #141719;
+}
+
+:root[data-theme="dark"] .post-card-media::before {
+  background:
+    linear-gradient(115deg, transparent 24%, rgba(220, 226, 230, 0.12) 42%, transparent 62%),
+    linear-gradient(135deg, rgba(220, 226, 230, 0.05), transparent 48%);
+}
+
+:root[data-theme="dark"] .post-card-media::after {
+  background:
+    linear-gradient(180deg, rgba(220, 226, 230, 0.035), transparent 36%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.14), transparent 52%);
+  opacity: 0.72;
 }
 
 :root[data-theme="dark"] .post-card-no-cover {
@@ -493,6 +546,7 @@
   position: absolute;
   top: 9px;
   left: 9px;
+  z-index: 4;
 }
 
 .post-index svg {
@@ -581,5 +635,23 @@
 @keyframes skeleton-shimmer {
   to {
     transform: translateX(100%);
+  }
+}
+
+@keyframes media-sheen {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .post-card-media::before {
+    animation: none;
+  }
+
+  .post-card-media img,
+  .post-card-media::before,
+  .post-card-media::after {
+    transition: none;
   }
 }

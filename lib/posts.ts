@@ -16,10 +16,16 @@ const SINGLE_DIGIT_MONTH_PATTERN = /^(\d{4})-(\d{1})-(\d{1,2})/;
 const DEFAULT_DATE = new Date(0);
 const DATE_LOCALE = "zh-CN";
 const EXCERPT_MAX_LENGTH = 150;
-const WORDS_PER_READING_MINUTE = 500;
+const READING_UNITS_PER_MINUTE = 350;
+const CODE_UNITS_PER_READING_MINUTE = 500;
+const SECONDS_PER_IMAGE = 12;
+const SECONDS_PER_MINUTE = 60;
 const MIN_READING_MINUTES = 1;
 const DEFAULT_COVER_ASPECT_RATIO = "16 / 10";
-const MARKDOWN_HEADING_PATTERN = /^(#{2,4})\s+(.+)$/;
+const MARKDOWN_HEADING_PATTERN = /^(#{1,5})\s+(.+)$/;
+const FENCED_CODE_BLOCK_PATTERN = /^(`{3,}|~{3,})/;
+const MARKDOWN_CODE_BLOCK_PATTERN = /```[\s\S]*?```|~~~[\s\S]*?~~~/g;
+const MARKDOWN_IMAGE_PATTERN = /!\[[^\]]*]\([^)]*\)/g;
 const CJK_CHARACTER_PATTERN = /[\u4e00-\u9fa5]/g;
 const LATIN_WORD_PATTERN = /[a-zA-Z0-9]+/g;
 const IMAGE_HEADER_MIN_BYTES = 24;
@@ -157,9 +163,9 @@ function formatDate(date: Date): string {
 
 function stripMarkdown(markdown: string): string {
   return markdown
-    .replace(/```[\s\S]*?```/g, " ")
+    .replace(MARKDOWN_CODE_BLOCK_PATTERN, " ")
     .replace(/<[^>]*>/g, " ")
-    .replace(/!\[[^\]]*]\([^)]*\)/g, " ")
+    .replace(MARKDOWN_IMAGE_PATTERN, " ")
     .replace(/\[[^\]]*]\([^)]*\)/g, " ")
     .replace(/[#>*_`~|[\]-]/g, " ")
     .replace(/&[a-z]+;/gi, " ")
@@ -175,17 +181,40 @@ function makeExcerpt(markdown: string, explicit?: string): string {
 
 function countWords(markdown: string): number {
   const text = stripMarkdown(markdown);
+  return countTextUnits(text);
+}
+
+function countTextUnits(text: string): number {
   const cjk = text.match(CJK_CHARACTER_PATTERN)?.length ?? 0;
   const latin = text.replace(CJK_CHARACTER_PATTERN, " ").match(LATIN_WORD_PATTERN)?.length ?? 0;
   return cjk + latin;
 }
 
+function calculateReadingMinutes(markdown: string, wordCount: number): number {
+  const codeUnits =
+    markdown.match(MARKDOWN_CODE_BLOCK_PATTERN)?.reduce((total, block) => total + countTextUnits(block), 0) ?? 0;
+  const imageSeconds = (markdown.match(MARKDOWN_IMAGE_PATTERN)?.length ?? 0) * SECONDS_PER_IMAGE;
+  const minutes =
+    wordCount / READING_UNITS_PER_MINUTE + codeUnits / CODE_UNITS_PER_READING_MINUTE + imageSeconds / SECONDS_PER_MINUTE;
+
+  return Math.max(MIN_READING_MINUTES, Math.ceil(minutes));
+}
+
 function extractHeadings(markdown: string): Heading[] {
   const idRegistry = createHeadingIdRegistry();
   const headings: Heading[] = [];
+  let insideFencedCodeBlock = false;
 
   for (const line of markdown.split("\n")) {
-    const match = MARKDOWN_HEADING_PATTERN.exec(line.trim());
+    const trimmedLine = line.trim();
+    if (FENCED_CODE_BLOCK_PATTERN.test(trimmedLine)) {
+      insideFencedCodeBlock = !insideFencedCodeBlock;
+      continue;
+    }
+
+    if (insideFencedCodeBlock) continue;
+
+    const match = MARKDOWN_HEADING_PATTERN.exec(trimmedLine);
     if (!match) continue;
 
     const text = match[2].replace(/[#`*_]/g, "").trim();
@@ -317,7 +346,7 @@ function readPost(source: PostSource): Post {
     coverAspectRatio: coverImage.aspectRatio,
     hasCover: Boolean(coverSource),
     excerpt: makeExcerpt(content, frontmatter.description),
-    readingMinutes: Math.max(MIN_READING_MINUTES, Math.ceil(wordCount / WORDS_PER_READING_MINUTE)),
+    readingMinutes: calculateReadingMinutes(content, wordCount),
     wordCount,
     content,
     headings: extractHeadings(content)
