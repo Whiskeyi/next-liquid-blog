@@ -4,17 +4,49 @@ import { Search, SlidersHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { glassStyle } from "@/components/glass-style";
-import { PostMeta } from "@/lib/posts";
+import type { PostMeta } from "@/lib/posts";
 import { PostCard } from "@/components/post-card";
 import { getShortcutIndex } from "@/lib/shortcuts";
 
+const ALL_TAG_LABEL = "全部";
 const INITIAL_POST_COUNT = 12;
 const POSTS_PER_BATCH = 6;
-const LOAD_MORE_DELAY = 260;
+const LOAD_MORE_DELAY_MS = 260;
+const LOAD_MORE_ROOT_MARGIN = "900px 0px";
+const RESPONSIVE_COLUMNS = [
+  { mediaQuery: "(max-width: 420px)", count: 1 },
+  { mediaQuery: "(max-width: 920px)", count: 2 }
+] as const;
+const DEFAULT_COLUMN_COUNT = 3;
+const POST_CARD_WEIGHT = {
+  landscape: {
+    base: 0.7,
+    featured: 0.92,
+    featuredEvery: 4,
+    featuredRemainder: 3
+  },
+  portrait: {
+    base: 1.2,
+    featured: 1.34,
+    featuredEvery: 3,
+    featuredRemainder: 2
+  },
+  square: 1,
+  none: 0.95,
+  titleDivisor: 34,
+  titleMax: 0.5,
+  excerptDivisor: 180,
+  excerptMax: 0.42
+} as const;
 
 type TagOption = {
   name: string;
   count: number;
+};
+
+type PostColumnItem = {
+  post: PostMeta;
+  index: number;
 };
 
 type PostFeedProps = {
@@ -25,8 +57,8 @@ type PostFeedProps = {
 export function PostFeed({ posts, tags }: PostFeedProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [activeTag, setActiveTag] = useState("全部");
-  const [columnCount, setColumnCount] = useState(3);
+  const [activeTag, setActiveTag] = useState(ALL_TAG_LABEL);
+  const [columnCount, setColumnCount] = useState(DEFAULT_COLUMN_COUNT);
   const [modifierDown, setModifierDown] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_POST_COUNT);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -35,13 +67,8 @@ export function PostFeed({ posts, tags }: PostFeedProps) {
 
   useEffect(() => {
     function updateColumnCount() {
-      if (window.matchMedia("(max-width: 420px)").matches) {
-        setColumnCount(1);
-      } else if (window.matchMedia("(max-width: 920px)").matches) {
-        setColumnCount(2);
-      } else {
-        setColumnCount(3);
-      }
+      const matchedColumn = RESPONSIVE_COLUMNS.find(({ mediaQuery }) => window.matchMedia(mediaQuery).matches);
+      setColumnCount(matchedColumn?.count ?? DEFAULT_COLUMN_COUNT);
     }
 
     updateColumnCount();
@@ -57,7 +84,7 @@ export function PostFeed({ posts, tags }: PostFeedProps) {
         !keyword ||
         `${post.title} ${post.subtitle} ${post.excerpt} ${tagsText}`.toLowerCase().includes(keyword);
       const matchesTag =
-        activeTag === "全部" || post.tags.includes(activeTag) || post.categories.includes(activeTag);
+        activeTag === ALL_TAG_LABEL || post.tags.includes(activeTag) || post.categories.includes(activeTag);
       return matchesQuery && matchesTag;
     });
   }, [activeTag, posts, query]);
@@ -75,7 +102,7 @@ export function PostFeed({ posts, tags }: PostFeedProps) {
       setVisibleCount((count) => Math.min(filteredPosts.length, count + POSTS_PER_BATCH));
       setIsLoadingMore(false);
       loadMoreTimeoutRef.current = undefined;
-    }, LOAD_MORE_DELAY);
+    }, LOAD_MORE_DELAY_MS);
   }, [filteredPosts.length, isLoadingMore]);
 
   useEffect(() => {
@@ -102,7 +129,7 @@ export function PostFeed({ posts, tags }: PostFeedProps) {
         if (!entry?.isIntersecting) return;
         loadMorePosts();
       },
-      { rootMargin: "900px 0px" }
+      { rootMargin: LOAD_MORE_ROOT_MARGIN }
     );
 
     observer.observe(sentinel);
@@ -146,7 +173,7 @@ export function PostFeed({ posts, tags }: PostFeedProps) {
   }, [router, visiblePosts]);
 
   const columns = useMemo(() => {
-    const nextColumns = Array.from({ length: columnCount }, () => [] as { post: PostMeta; index: number }[]);
+    const nextColumns = Array.from({ length: columnCount }, () => [] as PostColumnItem[]);
     const columnHeights = Array.from({ length: columnCount }, () => 0);
 
     visiblePosts.forEach((post, index) => {
@@ -177,7 +204,7 @@ export function PostFeed({ posts, tags }: PostFeedProps) {
       </div>
 
       <div className="tag-filter" aria-label="标签筛选">
-        {["全部", ...tags.map((tag) => tag.name)].map((tag) => (
+        {[ALL_TAG_LABEL, ...tags.map((tag) => tag.name)].map((tag) => (
           <button
             key={tag}
             className="chip"
@@ -186,7 +213,7 @@ export function PostFeed({ posts, tags }: PostFeedProps) {
             onClick={() => setActiveTag(tag)}
           >
             {tag}
-            {tag !== "全部" ? <span>{tags.find((item) => item.name === tag)?.count}</span> : null}
+            {tag !== ALL_TAG_LABEL ? <span>{tags.find((item) => item.name === tag)?.count}</span> : null}
           </button>
         ))}
       </div>
@@ -234,14 +261,22 @@ function isEditableTarget(target: EventTarget | null) {
 }
 
 function getPostCardWeight(post: PostMeta, index: number) {
+  const landscapeWeight =
+    index % POST_CARD_WEIGHT.landscape.featuredEvery === POST_CARD_WEIGHT.landscape.featuredRemainder
+      ? POST_CARD_WEIGHT.landscape.featured
+      : POST_CARD_WEIGHT.landscape.base;
+  const portraitWeight =
+    index % POST_CARD_WEIGHT.portrait.featuredEvery === POST_CARD_WEIGHT.portrait.featuredRemainder
+      ? POST_CARD_WEIGHT.portrait.featured
+      : POST_CARD_WEIGHT.portrait.base;
   const mediaWeights = {
-    landscape: index % 4 === 3 ? 0.92 : 0.7,
-    portrait: index % 3 === 2 ? 1.34 : 1.2,
-    square: 1,
-    none: 0.95
+    landscape: landscapeWeight,
+    portrait: portraitWeight,
+    square: POST_CARD_WEIGHT.square,
+    none: POST_CARD_WEIGHT.none
   };
-  const titleWeight = Math.min(post.title.length / 34, 0.5);
-  const excerptWeight = Math.min(post.excerpt.length / 180, 0.42);
+  const titleWeight = Math.min(post.title.length / POST_CARD_WEIGHT.titleDivisor, POST_CARD_WEIGHT.titleMax);
+  const excerptWeight = Math.min(post.excerpt.length / POST_CARD_WEIGHT.excerptDivisor, POST_CARD_WEIGHT.excerptMax);
 
   return mediaWeights[post.coverOrientation] + titleWeight + excerptWeight;
 }

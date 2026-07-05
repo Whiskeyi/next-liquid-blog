@@ -53,8 +53,9 @@
   }
 
   .brand-mark {
-    width: 78px;
+    min-width: 74px;
     height: 22px;
+    font-size: 0.88rem;
   }
 
   .nav-links {
@@ -132,6 +133,22 @@
   }
 
   .article-hero-with-cover .article-hero-image::after {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 42%),
+      linear-gradient(0deg, rgba(8, 11, 14, 0.16), transparent 50%);
+  }
+
+  .article-hero-watermark,
+  .article-hero[data-cover-orientation="portrait"] .article-hero-watermark,
+  .article-hero[data-cover-orientation="square"] .article-hero-watermark {
+    right: 12px;
+    bottom: 12px;
+    width: 56px;
+    height: 16px;
+    opacity: 0.58;
+  }
+
+  :root[data-theme="dark"] .article-hero-with-cover .article-hero-image::after {
     background:
       linear-gradient(180deg, rgba(8, 11, 14, 0.02), transparent 42%),
       linear-gradient(0deg, rgba(8, 11, 14, 0.28), transparent 50%);
@@ -250,6 +267,10 @@
 
   .post-card:hover {
     transform: none;
+  }
+
+  .post-card:active {
+    transform: scale(0.985);
   }
 
   .post-card-body {

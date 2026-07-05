@@ -6,8 +6,15 @@ import { Command } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { CSSProperties, KeyboardEvent, MouseEvent } from "react";
 import { glassStyle } from "@/components/glass-style";
-import { PostMeta } from "@/lib/posts";
+import type { PostMeta } from "@/lib/posts";
 import { getShortcutLabel } from "@/lib/shortcuts";
+
+const CARD_VARIANT_COUNT = 6;
+const COVERED_CARD_VISIBLE_LABELS = 2;
+const TEXT_CARD_VISIBLE_LABELS = 2;
+const CARD_INDEX_PAD_LENGTH = 2;
+const POST_CARD_IMAGE_SIZES =
+  "(max-width: 640px) calc((100vw - 40px) / 2), (max-width: 920px) calc((100vw - 46px) / 2), 350px";
 
 type PostCardProps = {
   post: PostMeta;
@@ -25,16 +32,18 @@ export function PostCard({ post, index = 0, shortcutActive = false }: PostCardPr
   const mediaStyle = { "--cover-aspect-ratio": post.coverAspectRatio } as CSSProperties;
   const cardClassName = [
     "post-card",
-    `post-card-variant-${index % 6}`,
+    `post-card-variant-${index % CARD_VARIANT_COUNT}`,
     post.hasCover ? "post-card-with-cover" : "post-card-no-cover"
   ].join(" ");
+  const visibleLabelStart = post.hasCover ? 1 : 0;
+  const visibleLabelEnd = post.hasCover ? COVERED_CARD_VISIBLE_LABELS + 1 : TEXT_CARD_VISIBLE_LABELS;
   const shortcut = shortcutActive && shortcutLabel ? (
     <>
       <Command size={14} />
       {shortcutLabel}
     </>
   ) : (
-    String(index + 1).padStart(2, "0")
+    String(index + 1).padStart(CARD_INDEX_PAD_LENGTH, "0")
   );
 
   function openPost(event: MouseEvent<HTMLElement>) {
@@ -64,7 +73,7 @@ export function PostCard({ post, index = 0, shortcutActive = false }: PostCardPr
             src={post.cover}
             alt=""
             fill
-            sizes="(max-width: 640px) calc((100vw - 40px) / 2), (max-width: 920px) calc((100vw - 46px) / 2), 350px"
+            sizes={POST_CARD_IMAGE_SIZES}
           />
           <div className="post-card-media-shade" />
           <div className="post-index">{shortcut}</div>
@@ -91,7 +100,7 @@ export function PostCard({ post, index = 0, shortcutActive = false }: PostCardPr
         <div className="post-card-footer">
           <time dateTime={post.date}>{post.displayDate}</time>
           <div className="chip-row">
-            {labels.slice(post.hasCover ? 1 : 0, post.hasCover ? 3 : 2).map((tag) => (
+            {labels.slice(visibleLabelStart, visibleLabelEnd).map((tag) => (
               <Link className="chip" href={`/tags/${encodeURIComponent(tag)}`} key={`${post.slug}-${tag}`}>
                 {tag}
               </Link>

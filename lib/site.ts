@@ -1,9 +1,56 @@
+type NavigationItem = {
+  href: string;
+  label: string;
+};
+
+type TimelineItem = {
+  period: string;
+  title: string;
+  company: string;
+  points: string[];
+};
+
+type SiteConfig = {
+  name: string;
+  title: string;
+  author: string;
+  description: string;
+  url: string;
+  locale: string;
+  language: string;
+  navigation: NavigationItem[];
+  links: {
+    github: string;
+    email: string;
+  };
+  home: {
+    heroEyebrow: string;
+    heroTitle: string;
+    feedEyebrowSuffix: string;
+    feedTitle: string;
+    feedDescription: string;
+    heroImages: string[];
+  };
+  about: {
+    title: string;
+    eyebrow: string;
+    heading: string;
+    description: string;
+    heroImage: string;
+    timelineEyebrow: string;
+    timelineTitle: string;
+    timeline: TimelineItem[];
+  };
+};
+
+const DEFAULT_SITE_URL = "https://blog.zhuchj.com";
+
 export const siteConfig = {
   name: "Whiskeyi's Blog",
   title: "Whiskeyi's Blog",
   author: "Whiskeyi",
   description: "前端工程、React、JavaScript 与系统化学习笔记。",
-  url: process.env.NEXT_PUBLIC_SITE_URL || "https://blog.zhuchj.com",
+  url: process.env.NEXT_PUBLIC_SITE_URL || DEFAULT_SITE_URL,
   locale: "zh_CN",
   language: "zh-CN",
   navigation: [
@@ -63,9 +110,9 @@ export const siteConfig = {
       }
     ]
   }
-};
+} satisfies SiteConfig;
 
-export function withBasePath(path: string) {
+export function withBasePath(path: string): string {
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
   if (!path || path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:")) {

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Heading } from "@/lib/posts";
+import type { Heading } from "@/lib/posts";
 import { softGlassStyle } from "@/components/glass-style";
 
 type ArticleTocProps = {

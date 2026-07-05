@@ -14,16 +14,25 @@ type MarkdownRendererProps = {
   slug: string;
 };
 
+const ALLOWED_EXTRA_TAG_NAMES = ["img", "figure", "figcaption"];
+const ALLOWED_GLOBAL_ATTRIBUTES = ["className", "id"];
+const ALLOWED_LINK_ATTRIBUTES = ["target", "rel"];
+const ALLOWED_CODE_ATTRIBUTES = ["data-language", "data-theme"];
+const ALLOWED_IMAGE_ATTRIBUTES = ["src", "alt", "title", "width", "height", "loading", "decoding", "data-src"];
+const HEADING_TAG_PATTERN = /^h[1-6]$/;
+const HEADING_ANCHOR_MARK = "#";
+const PRETTY_CODE_THEME = "github-dark-dimmed";
+
 const sanitizeSchema = {
   ...defaultSchema,
-  tagNames: [...(defaultSchema.tagNames ?? []), "img", "figure", "figcaption"],
+  tagNames: [...(defaultSchema.tagNames ?? []), ...ALLOWED_EXTRA_TAG_NAMES],
   attributes: {
     ...defaultSchema.attributes,
-    "*": [...(defaultSchema.attributes?.["*"] ?? []), "className", "id"],
-    a: [...(defaultSchema.attributes?.a ?? []), "target", "rel"],
-    code: [...(defaultSchema.attributes?.code ?? []), "data-language", "data-theme"],
-    pre: [...(defaultSchema.attributes?.pre ?? []), "data-language", "data-theme"],
-    img: ["src", "alt", "title", "width", "height", "loading", "decoding", "data-src"]
+    "*": [...(defaultSchema.attributes?.["*"] ?? []), ...ALLOWED_GLOBAL_ATTRIBUTES],
+    a: [...(defaultSchema.attributes?.a ?? []), ...ALLOWED_LINK_ATTRIBUTES],
+    code: [...(defaultSchema.attributes?.code ?? []), ...ALLOWED_CODE_ATTRIBUTES],
+    pre: [...(defaultSchema.attributes?.pre ?? []), ...ALLOWED_CODE_ATTRIBUTES],
+    img: ALLOWED_IMAGE_ATTRIBUTES
   }
 };
 
@@ -50,7 +59,7 @@ function rehypeHeadingIds() {
     const idRegistry = createHeadingIdRegistry();
 
     visitNodes(tree, (node) => {
-      if (!/^h[1-6]$/.test(node.tagName ?? "")) return;
+      if (!HEADING_TAG_PATTERN.test(node.tagName ?? "")) return;
 
       node.properties = {
         ...node.properties,
@@ -79,14 +88,14 @@ export async function MarkdownRenderer({ content, slug }: MarkdownRendererProps)
               },
               content: {
                 type: "text",
-                value: "#"
+                value: HEADING_ANCHOR_MARK
               }
             }
           ],
           [
             rehypePrettyCode,
             {
-              theme: "github-dark-dimmed",
+              theme: PRETTY_CODE_THEME,
               keepBackground: false
             }
           ]

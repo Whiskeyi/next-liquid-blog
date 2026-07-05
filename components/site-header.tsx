@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Code2 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { glassStyle } from "@/components/glass-style";
-import { siteConfig, withBasePath } from "@/lib/site";
+import { siteConfig } from "@/lib/site";
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -15,7 +15,7 @@ export function SiteHeader() {
       <nav className="glass-nav" style={glassStyle} aria-label="主导航">
         <Link className="brand" href="/" aria-label={`${siteConfig.name} 首页`}>
           <span className="brand-mark" aria-hidden="true">
-            <img src={withBasePath("/img/signature/signature.png")} alt="" />
+            ZHUCHJ
           </span>
         </Link>
         <div className="nav-links">

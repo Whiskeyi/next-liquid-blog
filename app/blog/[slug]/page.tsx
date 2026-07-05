@@ -8,7 +8,7 @@ import { ArticleToc } from "@/components/article-toc";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { ViewCounter } from "@/components/view-counter";
 import { getAbsolutePostUrl, getAllPosts, getPostBySlug } from "@/lib/posts";
-import { siteConfig } from "@/lib/site";
+import { siteConfig, withBasePath } from "@/lib/site";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -72,6 +72,9 @@ export default async function BlogPostPage({ params }: PageProps) {
                 loading="eager"
                 sizes="(max-width: 760px) calc(100vw - 36px), (max-width: 1120px) 42vw, 470px"
               />
+              <span className="article-hero-watermark" aria-hidden="true">
+                <img src={withBasePath("/img/signature/signature.png")} alt="" />
+              </span>
             </figure>
           ) : null}
           <div className="article-hero-content">

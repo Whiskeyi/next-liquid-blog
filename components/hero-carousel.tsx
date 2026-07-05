@@ -9,15 +9,31 @@ type HeroCarouselProps = {
   images: string[];
 };
 
+type SwipeStart = {
+  x: number;
+  y: number;
+  pointerId: number;
+};
+
 const SLIDE_INTERVAL_MS = 8000;
-const SWIPE_DISTANCE_PX = 44;
-const SWIPE_AXIS_RATIO = 1.25;
+const TOUCH_SWIPE = {
+  minDistancePx: 44,
+  axisRatio: 1.25,
+  dragLimitPx: 56,
+  dragDamping: 0.28,
+  resetDurationSeconds: 0.36
+} as const;
+const DESKTOP_PARALLAX = {
+  maxOffsetPx: 14,
+  pointerCenterRatio: 0.5,
+  easingDurationSeconds: 0.8
+} as const;
 
 export function HeroCarousel({ images }: HeroCarouselProps) {
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const moveXRef = useRef<((value: number) => void) | null>(null);
   const moveYRef = useRef<((value: number) => void) | null>(null);
-  const swipeStartRef = useRef<{ x: number; y: number; pointerId: number } | null>(null);
+  const swipeStartRef = useRef<SwipeStart | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [previousIndex, setPreviousIndex] = useState(0);
 
@@ -42,11 +58,11 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
     if (reduceMotion) return;
 
     moveXRef.current = gsap.quickTo(carousel, "--hero-x", {
-      duration: 0.8,
+      duration: DESKTOP_PARALLAX.easingDurationSeconds,
       ease: "power3.out"
     });
     moveYRef.current = gsap.quickTo(carousel, "--hero-y", {
-      duration: 0.8,
+      duration: DESKTOP_PARALLAX.easingDurationSeconds,
       ease: "power3.out"
     });
 
@@ -57,9 +73,30 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
   }, []);
 
   function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
+    if (event.pointerType === "touch") {
+      const swipeStart = swipeStartRef.current;
+      if (!swipeStart || swipeStart.pointerId !== event.pointerId) return;
+
+      const deltaX = event.clientX - swipeStart.x;
+      const deltaY = event.clientY - swipeStart.y;
+      if (Math.abs(deltaX) <= Math.abs(deltaY) * TOUCH_SWIPE.axisRatio) return;
+
+      const dragX = Math.max(
+        -TOUCH_SWIPE.dragLimitPx,
+        Math.min(TOUCH_SWIPE.dragLimitPx, deltaX * TOUCH_SWIPE.dragDamping)
+      );
+      event.currentTarget.setAttribute("data-dragging", "true");
+      event.currentTarget.style.setProperty("--hero-drag-x", `${dragX}px`);
+      return;
+    }
+
     const rect = event.currentTarget.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width - 0.5) * 14;
-    const y = ((event.clientY - rect.top) / rect.height - 0.5) * 14;
+    const x =
+      ((event.clientX - rect.left) / rect.width - DESKTOP_PARALLAX.pointerCenterRatio) *
+      DESKTOP_PARALLAX.maxOffsetPx;
+    const y =
+      ((event.clientY - rect.top) / rect.height - DESKTOP_PARALLAX.pointerCenterRatio) *
+      DESKTOP_PARALLAX.maxOffsetPx;
     moveXRef.current?.(x);
     moveYRef.current?.(y);
   }
@@ -67,6 +104,15 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
   function resetParallax() {
     moveXRef.current?.(0);
     moveYRef.current?.(0);
+  }
+
+  function resetTouchDrag(target: HTMLDivElement) {
+    target.removeAttribute("data-dragging");
+    gsap.to(target, {
+      "--hero-drag-x": 0,
+      duration: TOUCH_SWIPE.resetDurationSeconds,
+      ease: "power3.out"
+    });
   }
 
   function moveSlide(offset: number) {
@@ -90,6 +136,12 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
     });
   }
 
+  function releaseSwipeCapture(target: HTMLDivElement, pointerId: number) {
+    if (target.hasPointerCapture(pointerId)) {
+      target.releasePointerCapture(pointerId);
+    }
+  }
+
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
     if (event.pointerType !== "touch") return;
     if (event.target instanceof Element && event.target.closest(".hero-carousel-progress")) return;
@@ -99,6 +151,8 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
       y: event.clientY,
       pointerId: event.pointerId
     };
+
+    event.currentTarget.setPointerCapture(event.pointerId);
   }
 
   function handlePointerUp(event: PointerEvent<HTMLDivElement>) {
@@ -106,10 +160,14 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
     if (!swipeStart || swipeStart.pointerId !== event.pointerId) return;
 
     swipeStartRef.current = null;
+    releaseSwipeCapture(event.currentTarget, event.pointerId);
+    resetTouchDrag(event.currentTarget);
 
     const deltaX = event.clientX - swipeStart.x;
     const deltaY = event.clientY - swipeStart.y;
-    const isHorizontalSwipe = Math.abs(deltaX) >= SWIPE_DISTANCE_PX && Math.abs(deltaX) > Math.abs(deltaY) * SWIPE_AXIS_RATIO;
+    const isHorizontalSwipe =
+      Math.abs(deltaX) >= TOUCH_SWIPE.minDistancePx &&
+      Math.abs(deltaX) > Math.abs(deltaY) * TOUCH_SWIPE.axisRatio;
     if (!isHorizontalSwipe) return;
 
     moveSlide(deltaX < 0 ? 1 : -1);
@@ -118,6 +176,8 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
   function handlePointerCancel(event: PointerEvent<HTMLDivElement>) {
     if (swipeStartRef.current?.pointerId === event.pointerId) {
       swipeStartRef.current = null;
+      releaseSwipeCapture(event.currentTarget, event.pointerId);
+      resetTouchDrag(event.currentTarget);
     }
   }
 

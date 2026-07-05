@@ -4,9 +4,52 @@ import matter from "gray-matter";
 import { createHeadingIdRegistry } from "@/lib/heading-ids";
 import { siteConfig, withBasePath } from "@/lib/site";
 
-const postsDirectory = path.join(process.cwd(), "content", "posts");
-const generatedPostAssetsDirectory = "post-assets";
-const shouldCachePosts = process.env.NODE_ENV !== "development";
+const POSTS_DIRECTORY = path.join(process.cwd(), "content", "posts");
+const GENERATED_POST_ASSETS_DIRECTORY = "post-assets";
+const POST_INDEX_FILE = "index.md";
+const MARKDOWN_EXTENSION = ".md";
+const PUBLIC_DIRECTORY = "public";
+const PUBLIC_PATH_PREFIX = `${PUBLIC_DIRECTORY}/`;
+const LOCAL_POST_IMAGE_DIRECTORY = "imgs/";
+const DATE_PREFIX_PATTERN = /^\d{4}-\d{2}-\d{2}-/;
+const SINGLE_DIGIT_MONTH_PATTERN = /^(\d{4})-(\d{1})-(\d{1,2})/;
+const DEFAULT_DATE = new Date(0);
+const DATE_LOCALE = "zh-CN";
+const EXCERPT_MAX_LENGTH = 150;
+const WORDS_PER_READING_MINUTE = 500;
+const MIN_READING_MINUTES = 1;
+const DEFAULT_COVER_ASPECT_RATIO = "16 / 10";
+const MARKDOWN_HEADING_PATTERN = /^(#{2,4})\s+(.+)$/;
+const CJK_CHARACTER_PATTERN = /[\u4e00-\u9fa5]/g;
+const LATIN_WORD_PATTERN = /[a-zA-Z0-9]+/g;
+const IMAGE_HEADER_MIN_BYTES = 24;
+const PNG_SIGNATURE_OFFSET = 1;
+const PNG_SIGNATURE_LENGTH = 4;
+const GIF_SIGNATURE_OFFSET = 0;
+const GIF_SIGNATURE_LENGTH = 3;
+const PNG_DIMENSION_OFFSET = { width: 16, height: 20 } as const;
+const GIF_DIMENSION_OFFSET = { width: 6, height: 8 } as const;
+const JPEG_SIGNATURE = { firstByte: 0xff, secondByte: 0xd8, startOffset: 2 } as const;
+const JPEG_MARKER_PREFIX = 0xff;
+const JPEG_SEGMENT_LENGTH_OFFSET = 2;
+const JPEG_SEGMENT_HEADER_BYTES = 2;
+const JPEG_DIMENSION_OFFSET = { width: 7, height: 5 } as const;
+const JPEG_START_OF_FRAME_MARKERS = new Set([
+  0xc0,
+  0xc1,
+  0xc2,
+  0xc3,
+  0xc5,
+  0xc6,
+  0xc7,
+  0xc9,
+  0xca,
+  0xcb,
+  0xcd,
+  0xce,
+  0xcf
+]);
+const SHOULD_CACHE_POSTS = process.env.NODE_ENV !== "development";
 
 export type Heading = {
   id: string;
@@ -48,6 +91,8 @@ type RawFrontmatter = {
   description?: string;
 };
 
+type StringListInput = RawFrontmatter["tags"];
+
 type PostSource = {
   slug: string;
   filePath: string;
@@ -55,16 +100,36 @@ type PostSource = {
   cacheKey: string;
 };
 
-function toArray(value: string[] | string | undefined) {
+type ImageDimensions = {
+  width: number;
+  height: number;
+};
+
+type CoverImageMeta = {
+  orientation: CoverOrientation;
+  aspectRatio: string;
+};
+
+const EMPTY_COVER_META: CoverImageMeta = {
+  orientation: "none",
+  aspectRatio: DEFAULT_COVER_ASPECT_RATIO
+};
+
+const FALLBACK_COVER_META: CoverImageMeta = {
+  orientation: "landscape",
+  aspectRatio: DEFAULT_COVER_ASPECT_RATIO
+};
+
+function toArray(value: StringListInput): string[] {
   if (!value) return [];
   return Array.isArray(value) ? value.filter(Boolean) : [value].filter(Boolean);
 }
 
-function stripDatePrefix(fileName: string) {
-  return fileName.replace(/^\d{4}-\d{2}-\d{2}-/, "");
+function stripDatePrefix(fileName: string): string {
+  return fileName.replace(DATE_PREFIX_PATTERN, "");
 }
 
-function titleFromSlug(slug: string) {
+function titleFromSlug(slug: string): string {
   return stripDatePrefix(slug)
     .split("-")
     .filter(Boolean)
@@ -72,25 +137,25 @@ function titleFromSlug(slug: string) {
     .join(" ");
 }
 
-function parseDate(value: string | Date | undefined) {
-  if (!value) return new Date(0);
+function parseDate(value: RawFrontmatter["date"]): Date {
+  if (!value) return DEFAULT_DATE;
   if (value instanceof Date) return value;
 
-  const normalized = String(value).replace(/^(\d{4})-(\d{1})-(\d{1,2})/, "$1-0$2-$3");
+  const normalized = String(value).replace(SINGLE_DIGIT_MONTH_PATTERN, "$1-0$2-$3");
   return new Date(normalized.replace(" ", "T"));
 }
 
-function formatDate(date: Date) {
+function formatDate(date: Date): string {
   if (Number.isNaN(date.getTime())) return "";
 
-  return new Intl.DateTimeFormat("zh-CN", {
+  return new Intl.DateTimeFormat(DATE_LOCALE, {
     year: "numeric",
     month: "2-digit",
     day: "2-digit"
   }).format(date);
 }
 
-function stripMarkdown(markdown: string) {
+function stripMarkdown(markdown: string): string {
   return markdown
     .replace(/```[\s\S]*?```/g, " ")
     .replace(/<[^>]*>/g, " ")
@@ -102,16 +167,16 @@ function stripMarkdown(markdown: string) {
     .trim();
 }
 
-function makeExcerpt(markdown: string, explicit?: string) {
+function makeExcerpt(markdown: string, explicit?: string): string {
   if (explicit) return explicit;
   const text = stripMarkdown(markdown);
-  return text.length > 150 ? `${text.slice(0, 150)}...` : text;
+  return text.length > EXCERPT_MAX_LENGTH ? `${text.slice(0, EXCERPT_MAX_LENGTH)}...` : text;
 }
 
-function countWords(markdown: string) {
+function countWords(markdown: string): number {
   const text = stripMarkdown(markdown);
-  const cjk = text.match(/[\u4e00-\u9fa5]/g)?.length ?? 0;
-  const latin = text.replace(/[\u4e00-\u9fa5]/g, " ").match(/[a-zA-Z0-9]+/g)?.length ?? 0;
+  const cjk = text.match(CJK_CHARACTER_PATTERN)?.length ?? 0;
+  const latin = text.replace(CJK_CHARACTER_PATTERN, " ").match(LATIN_WORD_PATTERN)?.length ?? 0;
   return cjk + latin;
 }
 
@@ -120,7 +185,7 @@ function extractHeadings(markdown: string): Heading[] {
   const headings: Heading[] = [];
 
   for (const line of markdown.split("\n")) {
-    const match = /^(#{2,4})\s+(.+)$/.exec(line.trim());
+    const match = MARKDOWN_HEADING_PATTERN.exec(line.trim());
     if (!match) continue;
 
     const text = match[2].replace(/[#`*_]/g, "").trim();
@@ -135,11 +200,11 @@ function extractHeadings(markdown: string): Heading[] {
   return headings;
 }
 
-function isRemoteAsset(src: string) {
+function isRemoteAsset(src: string): boolean {
   return /^(https?:)?\/\//.test(src) || src.startsWith("data:");
 }
 
-export function normalizeAssetPath(src: string | undefined, slug?: string) {
+export function normalizeAssetPath(src: string | undefined, slug?: string): string {
   if (!src) return "";
   if (src.startsWith("//img/")) return withBasePath(src.slice(1));
   if (isRemoteAsset(src)) return src;
@@ -147,103 +212,78 @@ export function normalizeAssetPath(src: string | undefined, slug?: string) {
   const withoutDot = src.replace(/^(\.\/)+/, "").replace(/^(\.\.\/)+/, "");
   const withoutSlash = withoutDot.startsWith("/") ? withoutDot.slice(1) : withoutDot;
   const normalized =
-    slug && withoutSlash.startsWith("imgs/")
-      ? `/${generatedPostAssetsDirectory}/${slug}/${withoutSlash}`
+    slug && withoutSlash.startsWith(LOCAL_POST_IMAGE_DIRECTORY)
+      ? `/${GENERATED_POST_ASSETS_DIRECTORY}/${slug}/${withoutSlash}`
       : `/${withoutSlash}`;
 
   return withBasePath(encodeURI(normalized));
 }
 
-function resolveAssetPath(src: string | undefined, source?: PostSource) {
+function resolveAssetPath(src: string | undefined, source?: PostSource): string | null {
   if (!src || isRemoteAsset(src)) return null;
 
   const withoutDot = src.replace(/^(\.\/)+/, "").replace(/^(\.\.\/)+/, "");
   const withoutSlash = withoutDot.startsWith("/") ? withoutDot.slice(1) : withoutDot;
-  if (source && withoutSlash.startsWith("imgs/")) return path.join(source.directory, withoutSlash);
+  if (source && withoutSlash.startsWith(LOCAL_POST_IMAGE_DIRECTORY)) return path.join(source.directory, withoutSlash);
 
-  const publicRelativePath = withoutSlash.startsWith("public/") ? withoutSlash.slice(7) : withoutSlash;
+  const publicRelativePath = withoutSlash.startsWith(PUBLIC_PATH_PREFIX)
+    ? withoutSlash.slice(PUBLIC_PATH_PREFIX.length)
+    : withoutSlash;
 
-  return path.join(process.cwd(), "public", publicRelativePath);
+  return path.join(process.cwd(), PUBLIC_DIRECTORY, publicRelativePath);
 }
 
-function getImageDimensions(src: string | undefined, source?: PostSource) {
+function getImageDimensions(src: string | undefined, source?: PostSource): ImageDimensions | null {
   const assetPath = resolveAssetPath(src, source);
   if (!assetPath || !fs.existsSync(assetPath)) return null;
 
   const buffer = fs.readFileSync(assetPath);
-  if (buffer.length < 24) return null;
+  if (buffer.length < IMAGE_HEADER_MIN_BYTES) return null;
 
-  if (buffer.toString("ascii", 1, 4) === "PNG") {
+  if (buffer.toString("ascii", PNG_SIGNATURE_OFFSET, PNG_SIGNATURE_LENGTH) === "PNG") {
     return {
-      width: buffer.readUInt32BE(16),
-      height: buffer.readUInt32BE(20)
+      width: buffer.readUInt32BE(PNG_DIMENSION_OFFSET.width),
+      height: buffer.readUInt32BE(PNG_DIMENSION_OFFSET.height)
     };
   }
 
-  if (buffer.toString("ascii", 0, 3) === "GIF") {
+  if (buffer.toString("ascii", GIF_SIGNATURE_OFFSET, GIF_SIGNATURE_LENGTH) === "GIF") {
     return {
-      width: buffer.readUInt16LE(6),
-      height: buffer.readUInt16LE(8)
+      width: buffer.readUInt16LE(GIF_DIMENSION_OFFSET.width),
+      height: buffer.readUInt16LE(GIF_DIMENSION_OFFSET.height)
     };
   }
 
-  if (buffer[0] !== 0xff || buffer[1] !== 0xd8) return null;
+  if (buffer[0] !== JPEG_SIGNATURE.firstByte || buffer[1] !== JPEG_SIGNATURE.secondByte) return null;
 
-  let offset = 2;
+  let offset = JPEG_SIGNATURE.startOffset;
   while (offset < buffer.length) {
-    if (buffer[offset] !== 0xff) {
+    if (buffer[offset] !== JPEG_MARKER_PREFIX) {
       offset += 1;
       continue;
     }
 
     const marker = buffer[offset + 1];
-    const length = buffer.readUInt16BE(offset + 2);
-    const isStartOfFrame =
-      marker === 0xc0 ||
-      marker === 0xc1 ||
-      marker === 0xc2 ||
-      marker === 0xc3 ||
-      marker === 0xc5 ||
-      marker === 0xc6 ||
-      marker === 0xc7 ||
-      marker === 0xc9 ||
-      marker === 0xca ||
-      marker === 0xcb ||
-      marker === 0xcd ||
-      marker === 0xce ||
-      marker === 0xcf;
+    const length = buffer.readUInt16BE(offset + JPEG_SEGMENT_LENGTH_OFFSET);
 
-    if (isStartOfFrame) {
+    if (JPEG_START_OF_FRAME_MARKERS.has(marker)) {
       return {
-        width: buffer.readUInt16BE(offset + 7),
-        height: buffer.readUInt16BE(offset + 5)
+        width: buffer.readUInt16BE(offset + JPEG_DIMENSION_OFFSET.width),
+        height: buffer.readUInt16BE(offset + JPEG_DIMENSION_OFFSET.height)
       };
     }
 
-    offset += 2 + length;
+    offset += JPEG_SEGMENT_HEADER_BYTES + length;
   }
 
   return null;
 }
 
-function getCoverImageMeta(
-  src: string | undefined,
-  source: PostSource
-): { orientation: CoverOrientation; aspectRatio: string } {
-  if (!src) {
-    return {
-      orientation: "none" as CoverOrientation,
-      aspectRatio: "16 / 10"
-    };
-  }
+function getCoverImageMeta(src: string | undefined, source: PostSource): CoverImageMeta {
+  if (!src) return EMPTY_COVER_META;
 
   const dimensions = getImageDimensions(src, source);
-  if (!dimensions) {
-    return {
-      orientation: "landscape" as CoverOrientation,
-      aspectRatio: "16 / 10"
-    };
-  }
+  if (!dimensions) return FALLBACK_COVER_META;
 
   const orientation =
     dimensions.width === dimensions.height ? "square" : dimensions.width > dimensions.height ? "landscape" : "portrait";
@@ -277,7 +317,7 @@ function readPost(source: PostSource): Post {
     coverAspectRatio: coverImage.aspectRatio,
     hasCover: Boolean(coverSource),
     excerpt: makeExcerpt(content, frontmatter.description),
-    readingMinutes: Math.max(1, Math.ceil(wordCount / 500)),
+    readingMinutes: Math.max(MIN_READING_MINUTES, Math.ceil(wordCount / WORDS_PER_READING_MINUTE)),
     wordCount,
     content,
     headings: extractHeadings(content)
@@ -288,9 +328,9 @@ let allPostsCache: Post[] | null = null;
 const postCache = new Map<string, Post>();
 
 function sourceFromMarkdownFile(fileName: string): PostSource {
-  const filePath = path.join(postsDirectory, fileName);
+  const filePath = path.join(POSTS_DIRECTORY, fileName);
   return {
-    slug: fileName.replace(/\.md$/, ""),
+    slug: fileName.slice(0, -MARKDOWN_EXTENSION.length),
     filePath,
     directory: path.dirname(filePath),
     cacheKey: filePath
@@ -298,8 +338,8 @@ function sourceFromMarkdownFile(fileName: string): PostSource {
 }
 
 function sourceFromPostDirectory(slug: string): PostSource | null {
-  const directory = path.join(postsDirectory, slug);
-  const filePath = path.join(directory, "index.md");
+  const directory = path.join(POSTS_DIRECTORY, slug);
+  const filePath = path.join(directory, POST_INDEX_FILE);
 
   if (!fs.existsSync(filePath)) return null;
 
@@ -311,12 +351,12 @@ function sourceFromPostDirectory(slug: string): PostSource | null {
   };
 }
 
-function getPostSources() {
+function getPostSources(): PostSource[] {
   const sources = new Map<string, PostSource>();
-  const entries = fs.readdirSync(postsDirectory, { withFileTypes: true });
+  const entries = fs.readdirSync(POSTS_DIRECTORY, { withFileTypes: true });
 
   entries
-    .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
+    .filter((entry) => entry.isFile() && entry.name.endsWith(MARKDOWN_EXTENSION))
     .forEach((entry) => {
       const source = sourceFromMarkdownFile(entry.name);
       sources.set(source.slug, source);
@@ -332,15 +372,15 @@ function getPostSources() {
   return [...sources.values()];
 }
 
-function getPostSourceBySlug(slug: string) {
-  const markdownFileName = `${slug}.md`;
+function getPostSourceBySlug(slug: string): PostSource | null {
+  const markdownFileName = `${slug}${MARKDOWN_EXTENSION}`;
 
   return sourceFromPostDirectory(slug) ??
-    (fs.existsSync(path.join(postsDirectory, markdownFileName)) ? sourceFromMarkdownFile(markdownFileName) : null);
+    (fs.existsSync(path.join(POSTS_DIRECTORY, markdownFileName)) ? sourceFromMarkdownFile(markdownFileName) : null);
 }
 
-function getCachedPost(source: PostSource) {
-  if (!shouldCachePosts) return readPost(source);
+function getCachedPost(source: PostSource): Post {
+  if (!SHOULD_CACHE_POSTS) return readPost(source);
 
   const cached = postCache.get(source.cacheKey);
   if (cached) return cached;
@@ -350,8 +390,8 @@ function getCachedPost(source: PostSource) {
   return post;
 }
 
-function getAllPostRecords() {
-  if (!shouldCachePosts) {
+function getAllPostRecords(): Post[] {
+  if (!SHOULD_CACHE_POSTS) {
     return getPostSources()
       .map(readPost)
       .sort((a, b) => Number(new Date(b.date)) - Number(new Date(a.date)));
@@ -370,14 +410,14 @@ export function getAllPosts(): PostMeta[] {
   return getAllPostRecords().map(({ content: _content, headings: _headings, ...meta }) => meta);
 }
 
-export function getPostBySlug(slug: string) {
+export function getPostBySlug(slug: string): Post | null {
   const source = getPostSourceBySlug(slug);
 
   if (!source) return null;
   return getCachedPost(source);
 }
 
-export function getAllTags() {
+export function getAllTags(): { name: string; count: number }[] {
   const map = new Map<string, number>();
   getAllPosts().forEach((post) => {
     post.tags.forEach((tag) => map.set(tag, (map.get(tag) ?? 0) + 1));
@@ -389,14 +429,14 @@ export function getAllTags() {
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 }
 
-export function getPostsByTag(tag: string) {
+export function getPostsByTag(tag: string): PostMeta[] {
   const decoded = decodeURIComponent(tag);
   return getAllPosts().filter(
     (post) => post.tags.includes(decoded) || post.categories.includes(decoded)
   );
 }
 
-export function getArchiveGroups() {
+export function getArchiveGroups(): Record<string, PostMeta[]> {
   return getAllPosts().reduce<Record<string, PostMeta[]>>((groups, post) => {
     const year = new Date(post.date).getFullYear().toString();
     groups[year] = groups[year] ? [...groups[year], post] : [post];
@@ -404,6 +444,6 @@ export function getArchiveGroups() {
   }, {});
 }
 
-export function getAbsolutePostUrl(slug: string) {
+export function getAbsolutePostUrl(slug: string): string {
   return `${siteConfig.url}/blog/${slug}/`;
 }

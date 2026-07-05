@@ -2,6 +2,9 @@
 
 import { useEffect, useRef } from "react";
 
+const PERCENT_MAX = 100;
+const INITIAL_SCALE_X = 0;
+
 export function ReadingProgress() {
   const progressRef = useRef<HTMLDivElement>(null);
 
@@ -15,9 +18,9 @@ export function ReadingProgress() {
 
       const scrollTop = window.scrollY;
       const height = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = height > 0 ? Math.min(100, (scrollTop / height) * 100) : 0;
+      const progress = height > 0 ? Math.min(PERCENT_MAX, (scrollTop / height) * PERCENT_MAX) : 0;
 
-      progressElement.style.transform = `scaleX(${progress / 100})`;
+      progressElement.style.transform = `scaleX(${progress / PERCENT_MAX})`;
     }
 
     updateProgress();
@@ -30,5 +33,5 @@ export function ReadingProgress() {
     };
   }, []);
 
-  return <div ref={progressRef} className="reading-progress" style={{ transform: "scaleX(0)" }} />;
+  return <div ref={progressRef} className="reading-progress" style={{ transform: `scaleX(${INITIAL_SCALE_X})` }} />;
 }
