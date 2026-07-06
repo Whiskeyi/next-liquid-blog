@@ -739,8 +739,8 @@
   background: var(--code-bg);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius);
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
 }
 
 .markdown-body figure .code-frame {

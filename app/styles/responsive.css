@@ -605,6 +605,14 @@
     font-size: var(--code-block-font-size);
   }
 
+  .code-frame pre,
+  .code-frame pre code,
+  .code-frame pre span {
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
+  }
+
+  .code-frame pre code,
   .code-frame pre span {
     font-size: inherit;
   }
