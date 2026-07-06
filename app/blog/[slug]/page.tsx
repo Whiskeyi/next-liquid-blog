@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CalendarDays, Clock3, Eye, Hash } from "lucide-react";
 import { ArticleReadingTools } from "@/components/article-reading-tools";
 import { ArticleToc } from "@/components/article-toc";
+import { ImageZoomTrigger } from "@/components/image-with-zoom";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { ViewCounter } from "@/components/view-counter";
 import { getAbsolutePostUrl, getAllPosts, getPostBySlug } from "@/lib/posts";
@@ -67,14 +68,21 @@ export default async function BlogPostPage({ params }: PageProps) {
         <header className={heroClassName} data-cover-orientation={post.coverOrientation}>
           {post.hasCover ? (
             <figure className="article-hero-image" aria-label={`${post.title} 封面图`}>
-              <Image
+              <ImageZoomTrigger
                 src={post.cover}
-                alt=""
-                fill
-                priority
-                loading="eager"
-                sizes="(max-width: 760px) calc(100vw - 36px), (max-width: 1120px) 42vw, 470px"
-              />
+                alt={`${post.title} 封面图`}
+                buttonClassName="article-hero-image-button"
+                buttonLabel={`查看大图：${post.title} 封面图`}
+              >
+                <Image
+                  src={post.cover}
+                  alt=""
+                  fill
+                  priority
+                  loading="eager"
+                  sizes="(max-width: 760px) calc(100vw - 36px), (max-width: 1120px) 42vw, 470px"
+                />
+              </ImageZoomTrigger>
               <span className="article-hero-watermark" aria-hidden="true">
                 <img src={withBasePath("/img/signature/signature.png")} alt="" />
               </span>

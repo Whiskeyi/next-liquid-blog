@@ -602,6 +602,11 @@
 
   .code-frame pre {
     padding: 16px 48px 16px 13px;
+    font-size: var(--code-block-font-size);
+  }
+
+  .code-frame pre span {
+    font-size: inherit;
   }
 
   .article-image-button {

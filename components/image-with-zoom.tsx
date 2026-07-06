@@ -1,11 +1,19 @@
 "use client";
 
 import { Minus, Plus, RotateCcw, X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 type ImageWithZoomProps = React.ImgHTMLAttributes<HTMLImageElement> & {
   src: string;
+};
+
+type ImageZoomTriggerProps = {
+  src: string;
+  alt?: string;
+  buttonClassName?: string;
+  buttonLabel?: string;
+  children: ReactNode;
 };
 
 type ImageTransform = {
@@ -24,7 +32,7 @@ const DEFAULT_SCALE = 1;
 const MAX_SCALE = 4;
 const SCALE_STEP = 0.1;
 const WHEEL_SCALE_STEP = 0.04;
-const PINCH_SENSITIVITY = 0.22;
+const PINCH_SENSITIVITY = 0.58;
 const DOUBLE_CLICK_SCALE = 1.35;
 
 const defaultTransform: ImageTransform = {
@@ -48,7 +56,13 @@ const lightboxCloseStyle: React.CSSProperties = {
   WebkitBackdropFilter: "blur(18px) saturate(150%)"
 };
 
-export function ImageWithZoom({ src, alt = "", ...props }: ImageWithZoomProps) {
+export function ImageZoomTrigger({
+  src,
+  alt = "",
+  buttonClassName = "article-image-button",
+  buttonLabel = "查看大图",
+  children
+}: ImageZoomTriggerProps) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [transform, setTransform] = useState<ImageTransform>(defaultTransform);
@@ -289,11 +303,19 @@ export function ImageWithZoom({ src, alt = "", ...props }: ImageWithZoomProps) {
 
   return (
     <>
-      <button className="article-image-button" type="button" onClick={() => setOpen(true)}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={alt} loading="lazy" decoding="async" {...props} />
+      <button className={buttonClassName} type="button" aria-label={buttonLabel} onClick={() => setOpen(true)}>
+        {children}
       </button>
       {lightbox}
     </>
+  );
+}
+
+export function ImageWithZoom({ src, alt = "", ...props }: ImageWithZoomProps) {
+  return (
+    <ImageZoomTrigger src={src} alt={alt} buttonLabel={alt ? `查看大图：${alt}` : "查看大图"}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt={alt} loading="lazy" decoding="async" {...props} />
+    </ImageZoomTrigger>
   );
 }
