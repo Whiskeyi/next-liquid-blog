@@ -713,6 +713,9 @@
 }
 
 .markdown-body pre code {
+  display: block;
+  width: max-content;
+  min-width: 100%;
   padding: 0;
   color: inherit;
   font-family: inherit;
@@ -739,8 +742,8 @@
   background: var(--code-bg);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius);
-  -webkit-text-size-adjust: none;
-  text-size-adjust: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 .markdown-body figure .code-frame {
