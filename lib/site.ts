@@ -26,6 +26,7 @@ type SiteConfig = {
   navigation: NavigationItem[];
   links: {
     github: string;
+    repository: string;
     email: string;
   };
   home: {
@@ -66,6 +67,7 @@ export const siteConfig = {
   ],
   links: {
     github: "https://github.com/Whiskeyi",
+    repository: "https://github.com/Whiskeyi/next-liquid-blog",
     email: "zhuchjie@gmail.com"
   },
   home: {

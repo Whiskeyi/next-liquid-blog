@@ -23,11 +23,16 @@ const SECONDS_PER_MINUTE = 60;
 const MIN_READING_MINUTES = 1;
 const DEFAULT_COVER_ASPECT_RATIO = "16 / 10";
 const MARKDOWN_HEADING_PATTERN = /^(#{1,5})\s+(.+)$/;
+const LEADING_HTML_COMMENT_PATTERN = /^<!--[\s\S]*-->$/;
+const TOC_MARKER_PATTERN = /^(?:\[toc]|\[\[toc]])$/i;
 const FENCED_CODE_BLOCK_PATTERN = /^(`{3,}|~{3,})/;
 const MARKDOWN_CODE_BLOCK_PATTERN = /```[\s\S]*?```|~~~[\s\S]*?~~~/g;
 const MARKDOWN_IMAGE_PATTERN = /!\[[^\]]*]\([^)]*\)/g;
 const CJK_CHARACTER_PATTERN = /[\u4e00-\u9fa5]/g;
 const LATIN_WORD_PATTERN = /[a-zA-Z0-9]+/g;
+const PARENTHETICAL_TEXT_PATTERN = /（[^）]*）|\([^)]*\)/g;
+const MARKDOWN_TITLE_MARKUP_PATTERN = /[#`*_~]/g;
+const TITLE_COMPARISON_SEPARATOR_PATTERN = /[^\p{L}\p{N}]+/gu;
 const IMAGE_HEADER_MIN_BYTES = 24;
 const PNG_SIGNATURE_OFFSET = 1;
 const PNG_SIGNATURE_LENGTH = 4;
@@ -190,6 +195,46 @@ function countTextUnits(text: string): number {
   return cjk + latin;
 }
 
+function normalizeTitleForComparison(text: string): string {
+  return text
+    .replace(PARENTHETICAL_TEXT_PATTERN, "")
+    .replace(MARKDOWN_TITLE_MARKUP_PATTERN, "")
+    .toLocaleLowerCase(DATE_LOCALE)
+    .replace(TITLE_COMPARISON_SEPARATOR_PATTERN, "")
+    .trim();
+}
+
+function stripLeadingDuplicateTitleHeading(markdown: string, title: string): string {
+  const normalizedTitle = normalizeTitleForComparison(title);
+  if (!normalizedTitle) return markdown;
+
+  const lines = markdown.split("\n");
+  let headingIndex = 0;
+
+  while (headingIndex < lines.length) {
+    const trimmedLine = lines[headingIndex].trim();
+
+    if (!trimmedLine || LEADING_HTML_COMMENT_PATTERN.test(trimmedLine) || TOC_MARKER_PATTERN.test(trimmedLine)) {
+      headingIndex += 1;
+      continue;
+    }
+
+    break;
+  }
+
+  const headingMatch = MARKDOWN_HEADING_PATTERN.exec(lines[headingIndex]?.trim() ?? "");
+  if (!headingMatch) return markdown;
+
+  const headingText = headingMatch[2];
+  if (normalizeTitleForComparison(headingText) !== normalizedTitle) return markdown;
+
+  const nextLineIndex = headingIndex + 1;
+  const endIndex =
+    nextLineIndex < lines.length && lines[nextLineIndex].trim() === "" ? nextLineIndex + 1 : nextLineIndex;
+
+  return [...lines.slice(0, headingIndex), ...lines.slice(endIndex)].join("\n");
+}
+
 function calculateReadingMinutes(markdown: string, wordCount: number): number {
   const codeUnits =
     markdown.match(MARKDOWN_CODE_BLOCK_PATTERN)?.reduce((total, block) => total + countTextUnits(block), 0) ?? 0;
@@ -325,9 +370,11 @@ function getCoverImageMeta(src: string | undefined, source: PostSource): CoverIm
 
 function readPost(source: PostSource): Post {
   const file = fs.readFileSync(source.filePath, "utf8");
-  const { content, data } = matter(file);
+  const { content: rawContent, data } = matter(file);
   const frontmatter = data as RawFrontmatter;
   const slug = source.slug;
+  const title = frontmatter.title ?? titleFromSlug(slug);
+  const content = stripLeadingDuplicateTitleHeading(rawContent, title);
   const date = parseDate(frontmatter.date);
   const wordCount = countWords(content);
   const coverSource = frontmatter["header-img"];
@@ -335,7 +382,7 @@ function readPost(source: PostSource): Post {
 
   return {
     slug,
-    title: frontmatter.title ?? titleFromSlug(slug),
+    title,
     subtitle: frontmatter.subtitle ?? "",
     date: date.toISOString(),
     displayDate: formatDate(date),

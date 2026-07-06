@@ -30,7 +30,13 @@ export function SiteHeader() {
           })}
         </div>
         <div className="nav-actions">
-          <a className="icon-button" href={siteConfig.links.github} target="_blank" rel="noreferrer" aria-label="GitHub">
+          <a
+            className="icon-button"
+            href={siteConfig.links.repository}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="博客源码 GitHub 仓库"
+          >
             <Code2 size={18} />
           </a>
           <ThemeToggle />

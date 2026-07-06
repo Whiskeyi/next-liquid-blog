@@ -51,11 +51,15 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
     if (images.length <= 1 || isTouchInteracting) return;
 
     const timer = window.setTimeout(() => {
-      setSlideDirection("next");
-      setActiveIndex((current) => {
-        setPreviousIndex(current);
-        return (current + 1) % images.length;
-      });
+      const carousel = carouselRef.current;
+      const isMobile = window.matchMedia("(max-width: 640px)").matches;
+
+      if (carousel && isMobile && !touchSettlingRef.current) {
+        commitTouchSlide(carousel, 1);
+        return;
+      }
+
+      moveSlide(1);
     }, SLIDE_INTERVAL_MS);
 
     return () => window.clearTimeout(timer);
@@ -216,12 +220,14 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
     target.removeAttribute("data-dragging");
     target.setAttribute("data-settling", "true");
     target.setAttribute("data-drag-direction", direction);
-    setSlideDirection(direction);
+    flushSync(() => {
+      setSlideDirection(direction);
 
-    if (dragPreviewOffsetRef.current !== offset) {
-      dragPreviewOffsetRef.current = offset;
-      setDragPreviewOffset(offset);
-    }
+      if (dragPreviewOffsetRef.current !== offset) {
+        dragPreviewOffsetRef.current = offset;
+        setDragPreviewOffset(offset);
+      }
+    });
 
     animateTouchDrag(target, travelX, TOUCH_SWIPE.settleDurationSeconds, () =>
       finishCommittedTouchDrag(target, offset)

@@ -1,12 +1,42 @@
 "use client";
 
-import { X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Minus, Plus, RotateCcw, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 type ImageWithZoomProps = React.ImgHTMLAttributes<HTMLImageElement> & {
   src: string;
 };
+
+type ImageTransform = {
+  scale: number;
+  x: number;
+  y: number;
+};
+
+type PointerPosition = {
+  x: number;
+  y: number;
+};
+
+const MIN_SCALE = 0.6;
+const DEFAULT_SCALE = 1;
+const MAX_SCALE = 4;
+const SCALE_STEP = 0.1;
+const WHEEL_SCALE_STEP = 0.04;
+const PINCH_SENSITIVITY = 0.22;
+const DOUBLE_CLICK_SCALE = 1.35;
+
+const defaultTransform: ImageTransform = {
+  scale: DEFAULT_SCALE,
+  x: 0,
+  y: 0
+};
+
+const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+
+const getDistance = (first: PointerPosition, second: PointerPosition) =>
+  Math.hypot(first.x - second.x, first.y - second.y);
 
 const lightboxGlassStyle: React.CSSProperties = {
   backdropFilter: "blur(12px) saturate(140%)",
@@ -21,10 +51,51 @@ const lightboxCloseStyle: React.CSSProperties = {
 export function ImageWithZoom({ src, alt = "", ...props }: ImageWithZoomProps) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [transform, setTransform] = useState<ImageTransform>(defaultTransform);
+  const transformRef = useRef<ImageTransform>(defaultTransform);
+  const pointersRef = useRef(new Map<number, PointerPosition>());
+  const panPointRef = useRef<PointerPosition | null>(null);
+  const pinchStartRef = useRef<{ distance: number; scale: number } | null>(null);
+  const didMoveRef = useRef(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const applyTransform = useCallback((updater: ImageTransform | ((current: ImageTransform) => ImageTransform)) => {
+    setTransform((current) => {
+      const next = typeof updater === "function" ? updater(current) : updater;
+      const scale = clamp(next.scale, MIN_SCALE, MAX_SCALE);
+      const normalized = scale <= DEFAULT_SCALE ? { scale, x: 0, y: 0 } : { scale, x: next.x, y: next.y };
+
+      transformRef.current = normalized;
+      return normalized;
+    });
+  }, []);
+
+  const resetTransform = useCallback(() => {
+    pointersRef.current.clear();
+    panPointRef.current = null;
+    pinchStartRef.current = null;
+    didMoveRef.current = false;
+    applyTransform(defaultTransform);
+  }, [applyTransform]);
+
+  const zoomBy = useCallback(
+    (delta: number) => {
+      applyTransform((current) => ({
+        ...current,
+        scale: current.scale + delta
+      }));
+    },
+    [applyTransform]
+  );
+
+  useEffect(() => {
+    if (open) {
+      resetTransform();
+    }
+  }, [open, resetTransform]);
 
   useEffect(() => {
     if (!open) return;
@@ -32,6 +103,12 @@ export function ImageWithZoom({ src, alt = "", ...props }: ImageWithZoomProps) {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setOpen(false);
+      } else if (event.key === "0") {
+        resetTransform();
+      } else if (event.key === "+" || event.key === "=") {
+        zoomBy(SCALE_STEP);
+      } else if (event.key === "-") {
+        zoomBy(-SCALE_STEP);
       }
     };
 
@@ -43,17 +120,127 @@ export function ImageWithZoom({ src, alt = "", ...props }: ImageWithZoomProps) {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [open]);
+  }, [open, resetTransform, zoomBy]);
+
+  const getPointerList = () => Array.from(pointersRef.current.values());
+
+  const startPinch = () => {
+    const [first, second] = getPointerList();
+
+    if (!first || !second) return;
+
+    pinchStartRef.current = {
+      distance: getDistance(first, second),
+      scale: transformRef.current.scale
+    };
+    panPointRef.current = null;
+  };
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.target instanceof Element && event.target.closest("button")) {
+      return;
+    }
+
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (pointersRef.current.size === 1) {
+      panPointRef.current = { x: event.clientX, y: event.clientY };
+      pinchStartRef.current = null;
+      didMoveRef.current = false;
+    } else if (pointersRef.current.size === 2) {
+      didMoveRef.current = true;
+      startPinch();
+    }
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!pointersRef.current.has(event.pointerId)) return;
+
+    event.preventDefault();
+    pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (pointersRef.current.size >= 2 && pinchStartRef.current) {
+      const [first, second] = getPointerList();
+      if (!first || !second || pinchStartRef.current.distance === 0) return;
+
+      didMoveRef.current = true;
+      const pinchRatio = getDistance(first, second) / pinchStartRef.current.distance;
+      const nextScale = pinchStartRef.current.scale * (1 + (pinchRatio - 1) * PINCH_SENSITIVITY);
+      applyTransform((current) => ({
+        ...current,
+        scale: nextScale
+      }));
+      return;
+    }
+
+    if (transformRef.current.scale <= DEFAULT_SCALE || !panPointRef.current) return;
+
+    const deltaX = event.clientX - panPointRef.current.x;
+    const deltaY = event.clientY - panPointRef.current.y;
+
+    if (Math.abs(deltaX) > 0 || Math.abs(deltaY) > 0) {
+      didMoveRef.current = true;
+    }
+
+    panPointRef.current = { x: event.clientX, y: event.clientY };
+    applyTransform((current) => ({
+      ...current,
+      x: current.x + deltaX,
+      y: current.y + deltaY
+    }));
+  };
+
+  const handlePointerEnd = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    pointersRef.current.delete(event.pointerId);
+    pinchStartRef.current = null;
+
+    const [remainingPointer] = getPointerList();
+    panPointRef.current = remainingPointer ?? null;
+  };
+
+  const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+    zoomBy(event.deltaY > 0 ? -WHEEL_SCALE_STEP : WHEEL_SCALE_STEP);
+  };
+
+  const handleDoubleClick = (event: React.MouseEvent<HTMLImageElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    applyTransform(transformRef.current.scale === DEFAULT_SCALE ? { scale: DOUBLE_CLICK_SCALE, x: 0, y: 0 } : defaultTransform);
+  };
+
+  const handleLightboxClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget) return;
+
+    if (didMoveRef.current) {
+      didMoveRef.current = false;
+      return;
+    }
+
+    setOpen(false);
+  };
 
   const lightbox =
     open && mounted
       ? createPortal(
           <div
             className="image-lightbox"
+            data-zoomed={transform.scale > DEFAULT_SCALE}
             role="dialog"
             aria-modal="true"
             style={lightboxGlassStyle}
-            onClick={() => setOpen(false)}
+            onClick={handleLightboxClick}
+            onWheel={handleWheel}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerEnd}
+            onPointerCancel={handlePointerEnd}
+            onLostPointerCapture={handlePointerEnd}
           >
             <button
               className="lightbox-close"
@@ -67,8 +254,34 @@ export function ImageWithZoom({ src, alt = "", ...props }: ImageWithZoomProps) {
             >
               <X size={20} />
             </button>
+            <div
+              className="lightbox-controls"
+              onClick={(event) => event.stopPropagation()}
+              onPointerDown={(event) => event.stopPropagation()}
+              onWheel={(event) => event.stopPropagation()}
+            >
+              <button className="lightbox-control" type="button" aria-label="缩小图片" onClick={() => zoomBy(-SCALE_STEP)}>
+                <Minus size={18} />
+              </button>
+              <button className="lightbox-control" type="button" aria-label="重置图片" onClick={resetTransform}>
+                <RotateCcw size={17} />
+              </button>
+              <button className="lightbox-control" type="button" aria-label="放大图片" onClick={() => zoomBy(SCALE_STEP)}>
+                <Plus size={18} />
+              </button>
+            </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt={alt} onClick={(event) => event.stopPropagation()} />
+            <img
+              className="lightbox-image"
+              src={src}
+              alt={alt}
+              draggable={false}
+              style={{
+                transform: `translate3d(${transform.x}px, ${transform.y}px, 0) scale(${transform.scale})`
+              }}
+              onClick={(event) => event.stopPropagation()}
+              onDoubleClick={handleDoubleClick}
+            />
           </div>,
           document.body
         )

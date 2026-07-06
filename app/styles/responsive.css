@@ -194,12 +194,17 @@
 
   .article-standard .article-hero {
     min-height: auto;
-    padding: 104px 18px 42px;
+    padding: 104px 18px 21px;
   }
 
   .article-hero-with-cover {
     align-items: start;
     gap: 18px;
+  }
+
+  :root:not([data-theme="dark"]) .article-hero-with-cover {
+    color: var(--article-text);
+    background: var(--bg);
   }
 
   .article-hero-with-cover .article-hero-content {
@@ -222,6 +227,25 @@
     background:
       linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 42%),
       linear-gradient(0deg, rgba(8, 11, 14, 0.16), transparent 50%);
+  }
+
+  :root:not([data-theme="dark"]) .article-hero-with-cover .article-hero-content h1 {
+    color: var(--article-heading);
+  }
+
+  :root:not([data-theme="dark"]) .article-hero-with-cover .article-hero-content > p,
+  :root:not([data-theme="dark"]) .article-standard .article-hero-with-cover .article-hero-content > p,
+  :root:not([data-theme="dark"]) .article-hero-with-cover .article-meta,
+  :root:not([data-theme="dark"]) .article-hero-with-cover .back-link,
+  :root:not([data-theme="dark"]) .article-hero-with-cover .article-tags .chip {
+    color: var(--article-muted);
+  }
+
+  :root:not([data-theme="dark"]) .article-hero-with-cover .article-tags .chip {
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.24), transparent 42%),
+      var(--glass);
+    border-color: var(--line);
   }
 
   .article-hero-watermark,
@@ -511,7 +535,7 @@
   }
 
   .article-standard .article-layout {
-    padding-top: 38px;
+    padding-top: 19px;
     padding-bottom: 112px;
   }
 

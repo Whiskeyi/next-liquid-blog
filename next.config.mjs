@@ -24,6 +24,7 @@ const basePath =
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactCompiler: true,
   output: "export",
   turbopack: {
     root: process.cwd()

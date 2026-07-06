@@ -182,6 +182,13 @@ export async function MarkdownRenderer({ content, slug }: MarkdownRendererProps)
             const imageSrc = typeof src === "string" ? src : typeof dataSrc === "string" ? dataSrc : "";
             return <ImageWithZoom src={normalizeAssetPath(imageSrc, slug)} alt={alt ?? ""} {...props} />;
           },
+          table({ children, node: _node, ...props }) {
+            return (
+              <div className="markdown-table-scroll">
+                <table {...props}>{children}</table>
+              </div>
+            );
+          },
           pre({ children, ...props }) {
             return <CodeBlock {...props}>{children}</CodeBlock>;
           }

@@ -31,7 +31,12 @@ export function ArticleToc({ headings }: ArticleTocProps) {
       {!collapsed ? (
         <nav>
           {headings.map((heading) => (
-            <a key={`${heading.id}-${heading.text}`} href={`#${heading.id}`} data-depth={heading.depth}>
+            <a
+              key={`${heading.id}-${heading.text}`}
+              href={`#${heading.id}`}
+              data-depth={heading.depth}
+              title={heading.text}
+            >
               {heading.text}
             </a>
           ))}
