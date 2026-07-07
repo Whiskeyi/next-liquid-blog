@@ -602,19 +602,26 @@
 
   .code-frame pre {
     padding: 16px 48px 16px 13px;
+    overflow-x: hidden;
     font-size: var(--code-block-font-size);
+    white-space: pre-wrap;
   }
 
   .code-frame pre,
   .code-frame pre code,
   .code-frame pre span {
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
   }
 
   .code-frame pre code,
   .code-frame pre span {
+    width: auto;
+    min-width: 0;
     font-size: inherit;
+    overflow-wrap: anywhere;
+    white-space: inherit;
+    word-break: break-word;
   }
 
   .article-image-button {
