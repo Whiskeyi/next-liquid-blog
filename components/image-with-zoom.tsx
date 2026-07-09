@@ -385,7 +385,7 @@ export function ImageWithZoom({ src, alt = "", loading, decoding, onLoad, onErro
         data-enhanced={enhanced ? "true" : "false"}
         data-has-ratio={aspectRatio ? "true" : "false"}
         data-status={status}
-        style={{ aspectRatio }}
+        style={aspectRatio && status !== "loaded" ? { aspectRatio } : undefined}
       >
         <span className="article-image-placeholder" aria-hidden="true" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
