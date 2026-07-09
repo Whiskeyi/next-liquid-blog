@@ -23,6 +23,10 @@
     display: none;
   }
 
+  .article-page ~ .back-to-top {
+    display: none;
+  }
+
   .mobile-reader-bar,
   .mobile-toc-drawer {
     display: flex;

@@ -63,7 +63,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   const articleClassName = post.slug === LEGACY_FEATURE_ARTICLE_SLUG ? "article-feature" : "article-standard";
 
   return (
-    <main>
+    <main className="article-page">
       <article className={articleClassName}>
         <header className={heroClassName} data-cover-orientation={post.coverOrientation}>
           {post.hasCover ? (
