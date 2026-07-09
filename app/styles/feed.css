@@ -192,10 +192,24 @@
 .post-card-media::before {
   z-index: 1;
   background:
-    radial-gradient(circle at 24% 28%, rgba(255, 255, 255, 0.32) 0, transparent 34%),
-    radial-gradient(circle at 74% 64%, rgba(255, 255, 255, 0.18) 0, transparent 38%);
-  opacity: 0.72;
-  animation: media-placeholder-pulse 1800ms ease-in-out infinite alternate;
+    linear-gradient(
+      108deg,
+      transparent 0%,
+      transparent 39%,
+      rgba(255, 255, 255, 0.08) 45%,
+      rgba(255, 255, 255, 0.32) 50%,
+      rgba(255, 255, 255, 0.08) 55%,
+      transparent 62%,
+      transparent 100%
+    ),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.24), transparent 46%),
+    radial-gradient(circle at 76% 68%, rgba(255, 255, 255, 0.14) 0, transparent 42%);
+  background-position: -140% 0, 0 0, 0 0;
+  background-size: 240% 100%, auto, auto;
+  opacity: 0.68;
+  animation:
+    media-placeholder-shimmer 1650ms cubic-bezier(0.4, 0, 0.2, 1) infinite,
+    media-placeholder-pulse 2200ms ease-in-out infinite alternate;
   transition: opacity 320ms ease;
 }
 
@@ -368,8 +382,25 @@
 
 :root[data-theme="dark"] .post-card-media::before {
   background:
+    linear-gradient(
+      108deg,
+      transparent 0%,
+      transparent 40%,
+      rgba(255, 255, 255, 0.04) 45%,
+      rgba(255, 255, 255, 0.15) 50%,
+      rgba(255, 255, 255, 0.04) 55%,
+      transparent 62%,
+      transparent 100%
+    ),
     radial-gradient(circle at 24% 28%, rgba(220, 226, 230, 0.075) 0, transparent 34%),
     radial-gradient(circle at 74% 64%, rgba(220, 226, 230, 0.048) 0, transparent 38%);
+  background-position: -140% 0, 0 0, 0 0;
+  background-size: 240% 100%, auto, auto;
+  opacity: 0.78;
+}
+
+:root[data-theme="dark"] .post-card-media[data-loaded="true"]::before {
+  opacity: 0;
 }
 
 :root[data-theme="dark"] .post-card-media::after {
@@ -656,7 +687,13 @@
 
 @keyframes media-placeholder-pulse {
   to {
-    opacity: 0.48;
+    opacity: 0.52;
+  }
+}
+
+@keyframes media-placeholder-shimmer {
+  to {
+    background-position: 140% 0, 0 0, 0 0;
   }
 }
 
