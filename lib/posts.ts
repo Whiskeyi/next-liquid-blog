@@ -60,8 +60,6 @@ const JPEG_START_OF_FRAME_MARKERS = new Set([
   0xce,
   0xcf
 ]);
-const SHOULD_CACHE_POSTS = process.env.NODE_ENV !== "development";
-
 export type Heading = {
   id: string;
   text: string;
@@ -109,6 +107,16 @@ type PostSource = {
   filePath: string;
   directory: string;
   cacheKey: string;
+};
+
+type CachedPost = {
+  modifiedTime: number;
+  post: Post;
+};
+
+type AllPostsCache = {
+  signature: string;
+  posts: Post[];
 };
 
 type ImageDimensions = {
@@ -400,8 +408,8 @@ function readPost(source: PostSource): Post {
   };
 }
 
-let allPostsCache: Post[] | null = null;
-const postCache = new Map<string, Post>();
+let allPostsCache: AllPostsCache | null = null;
+const postCache = new Map<string, CachedPost>();
 
 function sourceFromMarkdownFile(fileName: string): PostSource {
   const filePath = path.join(POSTS_DIRECTORY, fileName);
@@ -455,31 +463,37 @@ function getPostSourceBySlug(slug: string): PostSource | null {
     (fs.existsSync(path.join(POSTS_DIRECTORY, markdownFileName)) ? sourceFromMarkdownFile(markdownFileName) : null);
 }
 
-function getCachedPost(source: PostSource): Post {
-  if (!SHOULD_CACHE_POSTS) return readPost(source);
+function getSourceModifiedTime(source: PostSource): number {
+  return fs.statSync(source.filePath).mtimeMs;
+}
 
+function makeSourcesSignature(sources: PostSource[]): string {
+  return sources.map((source) => `${source.cacheKey}:${getSourceModifiedTime(source)}`).join("|");
+}
+
+function getCachedPost(source: PostSource): Post {
+  const modifiedTime = getSourceModifiedTime(source);
   const cached = postCache.get(source.cacheKey);
-  if (cached) return cached;
+
+  if (cached && cached.modifiedTime === modifiedTime) return cached.post;
 
   const post = readPost(source);
-  postCache.set(source.cacheKey, post);
+  postCache.set(source.cacheKey, { modifiedTime, post });
   return post;
 }
 
 function getAllPostRecords(): Post[] {
-  if (!SHOULD_CACHE_POSTS) {
-    return getPostSources()
-      .map(readPost)
-      .sort((a, b) => Number(new Date(b.date)) - Number(new Date(a.date)));
+  const sources = getPostSources();
+  const signature = makeSourcesSignature(sources);
+
+  if (!allPostsCache || allPostsCache.signature !== signature) {
+    allPostsCache = {
+      signature,
+      posts: sources.map(getCachedPost).sort((a, b) => Number(new Date(b.date)) - Number(new Date(a.date)))
+    };
   }
 
-  if (!allPostsCache) {
-    allPostsCache = getPostSources()
-      .map(getCachedPost)
-      .sort((a, b) => Number(new Date(b.date)) - Number(new Date(a.date)));
-  }
-
-  return allPostsCache;
+  return allPostsCache.posts;
 }
 
 export function getAllPosts(): PostMeta[] {

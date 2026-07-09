@@ -207,7 +207,7 @@ lazyLoad(imgs);
 window.onscroll = () => lazyLoad(imgs);
 ```
 
-有同学可能会发现，频繁触发的 scroll 事件会给浏览器形成很大的压力，这里我们可以对懒加载进行进一步优化，结合[节流函数](https://zhuchj.com/debounce.html)进行进一步优化。
+有同学可能会发现，频繁触发的 scroll 事件会给浏览器形成很大的压力，这里我们可以对懒加载进行进一步优化，结合[节流函数](/blog/2021-10-12-debounce/)进行进一步优化。
 
 ##### 虚拟列表
 

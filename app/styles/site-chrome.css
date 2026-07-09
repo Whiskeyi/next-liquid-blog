@@ -175,6 +175,8 @@
 }
 
 .nav-links a {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   height: 32px;
@@ -194,6 +196,11 @@
   color: var(--text);
   font-weight: 760;
   background: color-mix(in srgb, var(--accent), transparent 88%);
+}
+
+.nav-links a[data-pending="true"] {
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent), transparent 90%);
 }
 
 .nav-actions {

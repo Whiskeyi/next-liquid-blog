@@ -175,8 +175,9 @@
   overflow: hidden;
   aspect-ratio: 16 / 10;
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--accent), white 62%), transparent 58%),
-    linear-gradient(315deg, color-mix(in srgb, var(--accent-3), white 52%), transparent 54%),
+    radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--accent), white 64%) 0, transparent 44%),
+    radial-gradient(circle at 86% 72%, color-mix(in srgb, var(--accent-3), white 58%) 0, transparent 48%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 60%),
     var(--bg-soft);
 }
 
@@ -191,11 +192,10 @@
 .post-card-media::before {
   z-index: 1;
   background:
-    linear-gradient(115deg, transparent 24%, rgba(255, 255, 255, 0.32) 42%, transparent 62%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.24), transparent 48%);
-  opacity: 1;
-  transform: translateX(-100%);
-  animation: media-sheen 1400ms ease-in-out infinite;
+    radial-gradient(circle at 24% 28%, rgba(255, 255, 255, 0.32) 0, transparent 34%),
+    radial-gradient(circle at 74% 64%, rgba(255, 255, 255, 0.18) 0, transparent 38%);
+  opacity: 0.72;
+  animation: media-placeholder-pulse 1800ms ease-in-out infinite alternate;
   transition: opacity 320ms ease;
 }
 
@@ -360,15 +360,16 @@
 
 :root[data-theme="dark"] .post-card-media {
   background:
-    linear-gradient(135deg, rgba(107, 214, 207, 0.18), transparent 58%),
-    linear-gradient(315deg, rgba(217, 189, 102, 0.16), transparent 54%),
+    radial-gradient(circle at 18% 18%, rgba(107, 214, 207, 0.16) 0, transparent 44%),
+    radial-gradient(circle at 86% 72%, rgba(217, 189, 102, 0.13) 0, transparent 48%),
+    linear-gradient(135deg, rgba(220, 226, 230, 0.035), transparent 60%),
     #141719;
 }
 
 :root[data-theme="dark"] .post-card-media::before {
   background:
-    linear-gradient(115deg, transparent 24%, rgba(220, 226, 230, 0.12) 42%, transparent 62%),
-    linear-gradient(135deg, rgba(220, 226, 230, 0.05), transparent 48%);
+    radial-gradient(circle at 24% 28%, rgba(220, 226, 230, 0.075) 0, transparent 34%),
+    radial-gradient(circle at 74% 64%, rgba(220, 226, 230, 0.048) 0, transparent 38%);
 }
 
 :root[data-theme="dark"] .post-card-media::after {
@@ -406,6 +407,21 @@
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.28),
     0 24px 62px rgba(21, 33, 43, 0.14);
+}
+
+.post-card[data-pending="true"] {
+  transform: translateY(-2px);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.4), transparent 42%),
+    color-mix(in srgb, var(--glass-strong), var(--accent) 7%);
+  border-color: color-mix(in srgb, var(--accent), var(--line) 34%);
+}
+
+:root[data-theme="dark"] .post-card[data-pending="true"] {
+  background:
+    linear-gradient(180deg, rgba(220, 226, 230, 0.046), transparent 42%),
+    color-mix(in srgb, rgba(12, 14, 16, 0.96), var(--accent) 8%);
+  border-color: rgba(220, 226, 230, 0.16);
 }
 
 .post-card:focus-visible {
@@ -638,9 +654,9 @@
   }
 }
 
-@keyframes media-sheen {
+@keyframes media-placeholder-pulse {
   to {
-    transform: translateX(100%);
+    opacity: 0.48;
   }
 }
 

@@ -56,6 +56,26 @@ const lightboxCloseStyle: React.CSSProperties = {
   WebkitBackdropFilter: "blur(18px) saturate(150%)"
 };
 
+const parseImageDimension = (value: React.ImgHTMLAttributes<HTMLImageElement>["width"]) => {
+  if (typeof value === "number") return Number.isFinite(value) && value > 0 ? value : null;
+  if (typeof value !== "string") return null;
+
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+};
+
+function getImageAspectRatio(
+  width: React.ImgHTMLAttributes<HTMLImageElement>["width"],
+  height: React.ImgHTMLAttributes<HTMLImageElement>["height"]
+) {
+  const parsedWidth = parseImageDimension(width);
+  const parsedHeight = parseImageDimension(height);
+
+  if (!parsedWidth || !parsedHeight) return undefined;
+
+  return `${parsedWidth} / ${parsedHeight}`;
+}
+
 export function ImageZoomTrigger({
   src,
   alt = "",
@@ -311,11 +331,79 @@ export function ImageZoomTrigger({
   );
 }
 
-export function ImageWithZoom({ src, alt = "", ...props }: ImageWithZoomProps) {
+export function ImageWithZoom({ src, alt = "", loading, decoding, onLoad, onError, style, ...props }: ImageWithZoomProps) {
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  const [enhanced, setEnhanced] = useState(false);
+  const [status, setStatus] = useState<"loading" | "loaded" | "error">("loading");
+  const aspectRatio = getImageAspectRatio(props.width, props.height);
+
+  useEffect(() => {
+    setEnhanced(true);
+
+    const image = imageRef.current;
+
+    if (!image) return;
+
+    const syncImageStatus = () => {
+      if (image.complete && image.naturalWidth > 0) {
+        setStatus("loaded");
+      } else if (image.complete) {
+        setStatus("error");
+      } else {
+        setStatus("loading");
+      }
+    };
+    const handleNativeLoad = () => setStatus("loaded");
+    const handleNativeError = () => setStatus("error");
+    const frameId = window.requestAnimationFrame(syncImageStatus);
+
+    image.addEventListener("load", handleNativeLoad);
+    image.addEventListener("error", handleNativeError);
+    syncImageStatus();
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      image.removeEventListener("load", handleNativeLoad);
+      image.removeEventListener("error", handleNativeError);
+    };
+  }, [src]);
+
+  const handleLoad = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    setStatus("loaded");
+    onLoad?.(event);
+  };
+
+  const handleError = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    setStatus("error");
+    onError?.(event);
+  };
+
   return (
     <ImageZoomTrigger src={src} alt={alt} buttonLabel={alt ? `查看大图：${alt}` : "查看大图"}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt={alt} loading="lazy" decoding="async" {...props} />
+      <span
+        className="article-image-frame"
+        data-enhanced={enhanced ? "true" : "false"}
+        data-has-ratio={aspectRatio ? "true" : "false"}
+        data-status={status}
+        style={{ aspectRatio }}
+      >
+        <span className="article-image-placeholder" aria-hidden="true" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          {...props}
+          ref={imageRef}
+          src={src}
+          alt={alt}
+          loading={loading ?? "lazy"}
+          decoding={decoding ?? "async"}
+          style={style}
+          onLoad={handleLoad}
+          onError={handleError}
+        />
+        <span className="article-image-error" role="status">
+          图片加载失败
+        </span>
+      </span>
     </ImageZoomTrigger>
   );
 }

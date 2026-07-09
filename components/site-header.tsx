@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { MouseEvent, useEffect, useState } from "react";
 import { Code2 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { glassStyle } from "@/components/glass-style";
@@ -9,6 +10,16 @@ import { siteConfig } from "@/lib/site";
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPendingHref(null);
+  }, [pathname]);
+
+  function handleNavigationClick(event: MouseEvent<HTMLAnchorElement>, href: string) {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+    if (href !== pathname) setPendingHref(href);
+  }
 
   return (
     <header className="site-header">
@@ -21,9 +32,17 @@ export function SiteHeader() {
         <div className="nav-links">
           {siteConfig.navigation.map((item) => {
             const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            const pending = pendingHref === item.href;
 
             return (
-              <Link key={item.href} href={item.href} data-active={active} aria-current={active ? "page" : undefined}>
+              <Link
+                key={item.href}
+                href={item.href}
+                data-active={active}
+                data-pending={pending}
+                aria-current={active ? "page" : undefined}
+                onClick={(event) => handleNavigationClick(event, item.href)}
+              >
                 {item.label}
               </Link>
             );

@@ -135,3 +135,28 @@ export function withBasePath(path: string): string {
   const normalized = path.startsWith("/") ? path : `/${path}`;
   return `${basePath}${normalized}`;
 }
+
+function parseUrl(value: string): URL | null {
+  try {
+    return new URL(value);
+  } catch {
+    return null;
+  }
+}
+
+export function normalizeSiteHref(href: string): string {
+  if (!href.startsWith("http://") && !href.startsWith("https://")) return href;
+
+  const url = parseUrl(href);
+  if (!url) return href;
+
+  const siteUrl = parseUrl(siteConfig.url);
+
+  if (!siteUrl || siteUrl.hostname !== url.hostname) return href;
+
+  const sitePath = siteUrl.origin === url.origin && siteUrl.pathname !== "/" ? siteUrl.pathname.replace(/\/$/, "") : "";
+  const pathname =
+    sitePath && url.pathname.startsWith(`${sitePath}/`) ? url.pathname.slice(sitePath.length) : url.pathname;
+
+  return withBasePath(`${pathname}${url.search}${url.hash}`);
+}

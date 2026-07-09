@@ -2,10 +2,6 @@
 
 A static Next.js blog template for technical notes, long-form writing, and GitHub Pages publishing.
 
-Suggested GitHub repository description:
-
-> A static Next.js blog template for technical notes, long-form writing, and GitHub Pages publishing.
-
 ## Stack
 
 - Next.js App Router with static export

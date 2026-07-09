@@ -26,6 +26,7 @@ type PostCardProps = {
 export function PostCard({ post, index = 0, shortcutActive = false }: PostCardProps) {
   const router = useRouter();
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [pending, setPending] = useState(false);
   const labels = Array.from(new Set([...post.categories, ...post.tags]));
   const href = `/blog/${post.slug}`;
   const shortcutLabel = getShortcutLabel(index);
@@ -48,13 +49,19 @@ export function PostCard({ post, index = 0, shortcutActive = false }: PostCardPr
     String(index + 1).padStart(CARD_INDEX_PAD_LENGTH, "0")
   );
 
+  function markPending() {
+    setPending(true);
+  }
+
   function openPost(event: MouseEvent<HTMLElement>) {
     if ((event.target as HTMLElement).closest("a")) return;
+    markPending();
     router.push(href);
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLElement>) {
     if (event.key !== "Enter") return;
+    markPending();
     router.push(href);
   }
 
@@ -66,6 +73,7 @@ export function PostCard({ post, index = 0, shortcutActive = false }: PostCardPr
       role="link"
       tabIndex={0}
       aria-label={`阅读 ${post.title}`}
+      data-pending={pending}
       onClick={openPost}
       onKeyDown={handleKeyDown}
     >
@@ -100,7 +108,9 @@ export function PostCard({ post, index = 0, shortcutActive = false }: PostCardPr
           </div>
         )}
         <h2>
-          <Link href={href}>{post.title}</Link>
+          <Link href={href} onClick={markPending}>
+            {post.title}
+          </Link>
         </h2>
         <p>{post.excerpt}</p>
         <div className="post-card-footer">

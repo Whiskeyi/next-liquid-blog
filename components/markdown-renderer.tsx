@@ -8,6 +8,7 @@ import { CodeBlock } from "@/components/code-block";
 import { ImageWithZoom } from "@/components/image-with-zoom";
 import { createHeadingIdRegistry } from "@/lib/heading-ids";
 import { normalizeAssetPath } from "@/lib/posts";
+import { normalizeSiteHref } from "@/lib/site";
 
 type MarkdownRendererProps = {
   content: string;
@@ -165,10 +166,11 @@ export async function MarkdownRenderer({ content, slug }: MarkdownRendererProps)
         ]}
         components={{
           a({ href = "", children, ...props }) {
-            const external = href.startsWith("http://") || href.startsWith("https://");
+            const normalizedHref = normalizeSiteHref(href);
+            const external = normalizedHref.startsWith("http://") || normalizedHref.startsWith("https://");
             return (
               <a
-                href={href}
+                href={normalizedHref}
                 target={external ? "_blank" : undefined}
                 rel={external ? "noreferrer" : undefined}
                 {...props}

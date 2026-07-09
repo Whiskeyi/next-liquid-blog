@@ -16,6 +16,11 @@ export function SiteMotion() {
 
     const context = gsap.context(() => {
       const nav = document.querySelector<HTMLElement>(".glass-nav");
+      const page = document.querySelector<HTMLElement>("main");
+
+      if (page) {
+        gsap.fromTo(page, { y: 8, opacity: 0.96 }, { y: 0, opacity: 1, duration: 0.24, ease: "power2.out" });
+      }
 
       if (nav) {
         gsap.fromTo(
