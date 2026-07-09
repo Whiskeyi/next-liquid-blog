@@ -1,5 +1,7 @@
 # Next Liquid Blog
 
+[English](./README.md) | [简体中文](./README.zh-CN.md)
+
 A static Next.js blog template for technical notes, long-form writing, and GitHub Pages publishing.
 
 ## Stack
