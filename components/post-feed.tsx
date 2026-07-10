@@ -15,7 +15,9 @@ const LOAD_MORE_DELAY_MS = 260;
 const LOAD_MORE_ROOT_MARGIN = "900px 0px";
 const RESPONSIVE_COLUMNS = [
   { mediaQuery: "(max-width: 420px)", count: 1 },
-  { mediaQuery: "(max-width: 920px)", count: 2 }
+  { mediaQuery: "(max-width: 920px)", count: 2 },
+  { mediaQuery: "(min-width: 2880px)", count: 5 },
+  { mediaQuery: "(min-width: 1600px)", count: 4 }
 ] as const;
 const DEFAULT_COLUMN_COUNT = 3;
 const POST_CARD_WEIGHT = {

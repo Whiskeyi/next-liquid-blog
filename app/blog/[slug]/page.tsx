@@ -61,6 +61,10 @@ export default async function BlogPostPage({ params }: PageProps) {
   const labels = Array.from(new Set([...post.categories, ...post.tags]));
   const heroClassName = ["article-hero", post.hasCover ? "article-hero-with-cover" : "article-hero-no-cover"].join(" ");
   const articleClassName = post.slug === LEGACY_FEATURE_ARTICLE_SLUG ? "article-feature" : "article-standard";
+  const coverSizes =
+    post.coverOrientation === "landscape"
+      ? "(max-width: 760px) calc(100vw - 36px), (max-width: 1599px) 100vw, (max-width: 2879px) 1520px, 1920px"
+      : "(max-width: 760px) calc(100vw - 36px), (max-width: 1599px) 42vw, (max-width: 2879px) 420px, 460px";
 
   return (
     <main className="article-page">
@@ -80,7 +84,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                   fill
                   priority
                   loading="eager"
-                  sizes="(max-width: 760px) calc(100vw - 36px), (max-width: 1120px) 42vw, 470px"
+                  sizes={coverSizes}
                 />
               </ImageZoomTrigger>
               <span className="article-hero-watermark" aria-hidden="true">

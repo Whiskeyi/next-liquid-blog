@@ -141,7 +141,7 @@
   grid-template-columns: minmax(0, 1fr) minmax(260px, 420px);
   gap: clamp(42px, 8vw, 104px);
   align-items: center;
-  width: min(1120px, 100%);
+  width: min(var(--shell-max), 100%);
   min-height: calc(100vh - 184px);
   margin: 0 auto;
 }

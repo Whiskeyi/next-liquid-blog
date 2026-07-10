@@ -28,7 +28,7 @@
   align-content: center;
   overflow: hidden;
   isolation: isolate;
-  width: min(1120px, 100%);
+  width: min(var(--shell-max), 100%);
   min-height: 56px;
   margin: 0 auto;
   padding: 8px 10px;

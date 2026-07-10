@@ -15,7 +15,7 @@ const COVERED_CARD_VISIBLE_LABELS = 2;
 const TEXT_CARD_VISIBLE_LABELS = 2;
 const CARD_INDEX_PAD_LENGTH = 2;
 const POST_CARD_IMAGE_SIZES =
-  "(max-width: 640px) calc((100vw - 40px) / 2), (max-width: 920px) calc((100vw - 46px) / 2), 350px";
+  "(max-width: 640px) calc((100vw - 40px) / 2), (max-width: 920px) calc((100vw - 46px) / 2), (min-width: 1600px) 370px, 350px";
 
 type PostCardProps = {
   post: PostMeta;
