@@ -1,6 +1,6 @@
 @media (min-width: 1600px) {
   :root {
-    --shell-max: 1520px;
+    --shell-max: 1680px;
     --shell-gutter: 64px;
   }
 
@@ -18,6 +18,10 @@
   .hero-visual {
     height: clamp(780px, 68vh, 980px);
     min-height: 0;
+  }
+
+  .hero-carousel-progress {
+    width: 210px;
   }
 
   .post-grid {
@@ -116,7 +120,7 @@
     width: var(--article-media-width);
     max-width: none;
     margin-right: 0;
-    margin-left: calc((var(--article-media-width) - var(--article-body-width)) / -2);
+    margin-left: 0;
   }
 
   .article-toc {
@@ -149,7 +153,7 @@
 
 @media (min-width: 2880px) {
   :root {
-    --shell-max: 1920px;
+    --shell-max: 2160px;
     --shell-gutter: 96px;
   }
 
@@ -158,8 +162,16 @@
     font-size: 18px;
   }
 
+  .glass-nav {
+    width: min(1920px, 100%);
+  }
+
   .hero-visual {
     height: clamp(900px, 56vh, 1160px);
+  }
+
+  .hero-carousel-progress {
+    width: 240px;
   }
 
   .section-heading h1,

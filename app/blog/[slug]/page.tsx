@@ -63,7 +63,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   const articleClassName = post.slug === LEGACY_FEATURE_ARTICLE_SLUG ? "article-feature" : "article-standard";
   const coverSizes =
     post.coverOrientation === "landscape"
-      ? "(max-width: 760px) calc(100vw - 36px), (max-width: 1599px) 100vw, (max-width: 2879px) 1520px, 1920px"
+      ? "(max-width: 760px) calc(100vw - 36px), (max-width: 1599px) 100vw, (max-width: 2879px) 1680px, 2160px"
       : "(max-width: 760px) calc(100vw - 36px), (max-width: 1599px) 42vw, (max-width: 2879px) 420px, 460px";
 
   return (
