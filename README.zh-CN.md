@@ -4,6 +4,22 @@
 
 一个用于技术笔记、长文写作与 GitHub Pages 发布的静态 Next.js 博客模板。
 
+## 页面预览
+
+### 首页
+
+![Next Liquid Blog 首页](./docs/screenshots/home.png)
+
+### 文章页
+
+![Next Liquid Blog 文章页](./docs/screenshots/article.png)
+
+### 移动端
+
+<p align="center">
+  <img src="./docs/screenshots/mobile-home.png" alt="Next Liquid Blog 移动端首页" width="390">
+</p>
+
 ## 技术栈
 
 - 使用 Next.js App Router 与静态导出

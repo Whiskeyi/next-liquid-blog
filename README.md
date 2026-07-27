@@ -4,6 +4,22 @@
 
 A static Next.js blog template for technical notes, long-form writing, and GitHub Pages publishing.
 
+## Preview
+
+### Home
+
+![Next Liquid Blog home page](./docs/screenshots/home.png)
+
+### Article
+
+![Next Liquid Blog article page](./docs/screenshots/article.png)
+
+### Mobile
+
+<p align="center">
+  <img src="./docs/screenshots/mobile-home.png" alt="Next Liquid Blog mobile home page" width="390">
+</p>
+
 ## Stack
 
 - Next.js App Router with static export
