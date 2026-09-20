@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Cordis 插件装载、使用与撤销机制</title>
+  <desc id="desc">Profile 和 Preset 声明插件，Loader 创建 Context，Fiber 等待依赖，apply 注册能力，运行时消费，最终 Dispose 撤销副作用。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <style>
+      text { font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif; fill: #0f172a; }
+      .title { font-size: 42px; font-weight: 700; }
+      .subtitle { font-size: 21px; fill: #64748b; }
+      .node-title { font-size: 25px; font-weight: 700; }
+      .node-text { font-size: 20px; fill: #475569; }
+      .num { font-size: 16px; font-weight: 700; fill: #ffffff; }
+      .arrow { stroke: #475569; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .return { stroke: #94a3b8; stroke-width: 3; stroke-dasharray: 10 8; fill: none; marker-end: url(#arrow); }
+      .term { font-size: 19px; font-weight: 650; }
+      .term-note { font-size: 17px; fill: #64748b; }
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="#ffffff"/>
+  <text x="800" y="68" text-anchor="middle" class="title">Cordis：插件如何被装载、使用与撤销</text>
+  <text x="800" y="105" text-anchor="middle" class="subtitle">关键不是“加载代码”，而是让注册、依赖与清理进入同一个生命周期</text>
+
+  <g transform="translate(70 185)">
+    <rect width="270" height="145" rx="20" fill="#fff7ed" stroke="#f97316" stroke-width="2"/>
+    <circle cx="28" cy="28" r="17" fill="#f97316"/><text x="28" y="34" text-anchor="middle" class="num">1</text>
+    <text x="135" y="65" text-anchor="middle" class="node-title">Profile / Preset</text>
+    <text x="135" y="101" text-anchor="middle" class="node-text">声明插件与能力边界</text>
+  </g>
+
+  <g transform="translate(390 185)">
+    <rect width="270" height="145" rx="20" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+    <circle cx="28" cy="28" r="17" fill="#2563eb"/><text x="28" y="34" text-anchor="middle" class="num">2</text>
+    <text x="135" y="65" text-anchor="middle" class="node-title">Loader</text>
+    <text x="135" y="101" text-anchor="middle" class="node-text">导入插件并创建 Context</text>
+  </g>
+
+  <g transform="translate(735 185)">
+    <path d="M 135 0 L 270 72.5 L 135 145 L 0 72.5 Z" fill="#fffbeb" stroke="#f59e0b" stroke-width="2"/>
+    <circle cx="45" cy="35" r="17" fill="#f59e0b"/><text x="45" y="41" text-anchor="middle" class="num">3</text>
+    <text x="135" y="68" text-anchor="middle" class="node-title">依赖就绪？</text>
+    <text x="135" y="100" text-anchor="middle" class="node-text">Fiber / Coeffect</text>
+  </g>
+
+  <g transform="translate(1080 170)">
+    <rect width="360" height="175" rx="22" fill="#f5f3ff" stroke="#7c3aed" stroke-width="4"/>
+    <circle cx="30" cy="30" r="17" fill="#7c3aed"/><text x="30" y="36" text-anchor="middle" class="num">4</text>
+    <text x="180" y="64" text-anchor="middle" class="node-title">plugin.apply</text>
+    <text x="180" y="103" text-anchor="middle" class="node-text">注册 Service · Tool · Event</text>
+    <text x="180" y="136" text-anchor="middle" class="node-text">同步登记 Effect</text>
+  </g>
+
+  <g transform="translate(1080 465)">
+    <rect width="360" height="155" rx="22" fill="#ecfdf5" stroke="#10b981" stroke-width="3"/>
+    <circle cx="30" cy="30" r="17" fill="#10b981"/><text x="30" y="36" text-anchor="middle" class="num">5</text>
+    <text x="180" y="68" text-anchor="middle" class="node-title">运行时消费</text>
+    <text x="180" y="108" text-anchor="middle" class="node-text">Agent · Host · UI 按需调用</text>
+  </g>
+
+  <g transform="translate(735 455)">
+    <rect width="270" height="175" rx="22" fill="#f8fafc" stroke="#94a3b8" stroke-width="3"/>
+    <circle cx="30" cy="30" r="17" fill="#64748b"/><text x="30" y="36" text-anchor="middle" class="num">6</text>
+    <text x="135" y="70" text-anchor="middle" class="node-title">Dispose / HMR</text>
+    <text x="135" y="108" text-anchor="middle" class="node-text">反向撤销 Effect</text>
+    <text x="135" y="140" text-anchor="middle" class="node-text">回收监听器与资源</text>
+  </g>
+
+  <path d="M 340 257 L 382 257" class="arrow"/>
+  <path d="M 660 257 L 720 257" class="arrow"/>
+  <path d="M 1005 257 L 1065 257" class="arrow"/>
+  <path d="M 1260 345 L 1260 450" class="arrow"/>
+  <path d="M 1080 542 L 1020 542" class="arrow"/>
+  <path d="M 735 542 C 560 542 525 455 525 345" class="return"/>
+  <text x="420" y="590" class="node-text">配置变化 / 退出后重新装配</text>
+
+  <g transform="translate(120 735)">
+    <rect width="1360" height="105" rx="18" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="80" y="43" class="term">Context</text><text x="80" y="75" class="term-note">能力插座与作用域</text>
+    <line x1="430" y1="24" x2="430" y2="81" stroke="#e2e8f0"/>
+    <text x="520" y="43" class="term">Service</text><text x="520" y="75" class="term-note">稳定接口，隔离实现</text>
+    <line x1="880" y1="24" x2="880" y2="81" stroke="#e2e8f0"/>
+    <text x="970" y="43" class="term">Effect</text><text x="970" y="75" class="term-note">注册贡献时一并登记撤销方式</text>
+  </g>
+</svg>

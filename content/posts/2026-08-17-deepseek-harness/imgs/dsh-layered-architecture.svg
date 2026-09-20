@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">DeepSeek Harness 插件化分层架构</title>
+  <desc id="desc">从产品入口、组合层、Agent Runtime、能力插件到底层 Cordis 微内核的五层架构。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <style>
+      text { font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif; fill: #0f172a; }
+      .title { font-size: 42px; font-weight: 700; letter-spacing: .2px; }
+      .subtitle { font-size: 22px; fill: #64748b; }
+      .layer { font-size: 23px; font-weight: 700; }
+      .items { font-size: 25px; font-weight: 520; }
+      .note { font-size: 18px; fill: #475569; }
+      .arrow { stroke: #64748b; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1600" height="1000" fill="#ffffff"/>
+
+  <text x="800" y="66" text-anchor="middle" class="title">DeepSeek Harness：插件化分层架构</text>
+  <text x="800" y="103" text-anchor="middle" class="subtitle">稳定的是装配与治理，变化的是 Agent 能力</text>
+
+  <g>
+    <rect x="170" y="145" width="1260" height="125" rx="20" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+    <rect x="195" y="169" width="190" height="77" rx="15" fill="#e2e8f0"/>
+    <text x="290" y="216" text-anchor="middle" class="layer">产品入口</text>
+    <text x="875" y="211" text-anchor="middle" class="items">Web / Browser　·　Headless　·　SDK / ACP</text>
+  </g>
+
+  <path d="M 800 270 L 800 307" class="arrow"/>
+
+  <g>
+    <rect x="170" y="315" width="1260" height="125" rx="20" fill="#fffbeb" stroke="#f59e0b" stroke-width="2"/>
+    <rect x="195" y="339" width="190" height="77" rx="15" fill="#fef3c7"/>
+    <text x="290" y="386" text-anchor="middle" class="layer">组合层</text>
+    <text x="875" y="377" text-anchor="middle" class="items">Profile　·　Bundle　·　Preset</text>
+    <text x="875" y="410" text-anchor="middle" class="note">产品启动　　复用能力集合　　限定单个 Agent 的能力边界</text>
+  </g>
+
+  <path d="M 800 440 L 800 477" class="arrow"/>
+
+  <g>
+    <rect x="150" y="485" width="1300" height="140" rx="22" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+    <rect x="178" y="515" width="220" height="80" rx="16" fill="#dbeafe"/>
+    <text x="288" y="563" text-anchor="middle" class="layer">Agent Runtime</text>
+    <text x="930" y="548" text-anchor="middle" class="items">Agent Registry　·　Agent Loop（也是插件）</text>
+    <text x="930" y="585" text-anchor="middle" class="note">Session　·　Prompt　·　Tools　·　Policy</text>
+  </g>
+
+  <path d="M 800 625 L 800 662" class="arrow"/>
+
+  <g>
+    <rect x="170" y="670" width="1260" height="125" rx="20" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/>
+    <rect x="195" y="694" width="190" height="77" rx="15" fill="#ede9fe"/>
+    <text x="290" y="741" text-anchor="middle" class="layer">能力插件</text>
+    <text x="875" y="736" text-anchor="middle" class="items">LLM　·　FS / Shell　·　Sandbox　·　Persistence　·　Web / MCP</text>
+  </g>
+
+  <path d="M 800 795 L 800 832" class="arrow"/>
+
+  <g>
+    <rect x="150" y="840" width="1300" height="130" rx="22" fill="#ecfdf5" stroke="#059669" stroke-width="4"/>
+    <rect x="178" y="866" width="220" height="78" rx="16" fill="#d1fae5"/>
+    <text x="288" y="913" text-anchor="middle" class="layer">Cordis 微内核</text>
+    <text x="930" y="898" text-anchor="middle" class="items">Context / DI　·　Typed Events　·　Lifecycle / Effect　·　Loader / HMR</text>
+    <text x="930" y="934" text-anchor="middle" class="note">统一依赖、生命周期、装载与卸载</text>
+  </g>
+</svg>

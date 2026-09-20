@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1050" viewBox="0 0 1800 1050" role="img" aria-labelledby="title desc">
+  <title id="title">一次 Agent 响应中插件与 Loop 的协作</title>
+  <desc id="desc">用户消息进入 Agent Loop，组装 Step、请求模型、判断 Tool Call、执行工具并把结果写入 Session，然后进入下一 Step，直到 Turn 结束。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <marker id="blue-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <style>
+      text { font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif; fill: #0f172a; }
+      .title { font-size: 42px; font-weight: 700; }
+      .subtitle { font-size: 21px; fill: #64748b; }
+      .group-label { font-size: 20px; font-weight: 700; fill: #2563eb; letter-spacing: 1px; }
+      .node-title { font-size: 25px; font-weight: 700; }
+      .node-text { font-size: 20px; fill: #475569; }
+      .plugin { font-size: 21px; font-weight: 650; fill: #334155; }
+      .edge-label { font-size: 19px; font-weight: 650; fill: #475569; }
+      .main { stroke: #2563eb; stroke-width: 4; fill: none; marker-end: url(#blue-arrow); }
+      .neutral { stroke: #475569; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .plugin-edge { stroke: #94a3b8; stroke-width: 3; stroke-dasharray: 9 8; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1800" height="1050" fill="#ffffff"/>
+  <text x="900" y="66" text-anchor="middle" class="title">一次 Agent 响应：插件提供能力，Loop 负责闭环</text>
+  <text x="900" y="103" text-anchor="middle" class="subtitle">一个 Turn 包含 1…N 个 Step；有 Tool Call 就继续，没有则结束</text>
+
+  <rect x="280" y="235" width="1220" height="690" rx="28" fill="#f8fafc" stroke="#93c5fd" stroke-width="2"/>
+  <text x="320" y="278" class="group-label">AGENT LOOP · CORDIS PLUGIN</text>
+
+  <g transform="translate(350 130)">
+    <rect width="240" height="80" rx="16" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+    <text x="120" y="49" text-anchor="middle" class="plugin">Context Plugin</text>
+  </g>
+  <g transform="translate(690 130)">
+    <rect width="240" height="80" rx="16" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+    <text x="120" y="49" text-anchor="middle" class="plugin">Model Plugin</text>
+  </g>
+  <g transform="translate(1515 655)">
+    <rect width="220" height="80" rx="16" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+    <text x="110" y="49" text-anchor="middle" class="plugin">Tool Plugin</text>
+  </g>
+
+  <g transform="translate(30 420)">
+    <rect width="215" height="120" rx="20" fill="#fff7ed" stroke="#f97316" stroke-width="2"/>
+    <text x="107" y="52" text-anchor="middle" class="node-title">用户消息</text>
+    <text x="107" y="87" text-anchor="middle" class="node-text">写入 Inbox</text>
+  </g>
+
+  <g transform="translate(350 390)">
+    <rect width="275" height="145" rx="22" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+    <text x="137" y="61" text-anchor="middle" class="node-title">Step 组装</text>
+    <text x="137" y="102" text-anchor="middle" class="node-text">Prompt · Surface · Tools</text>
+  </g>
+
+  <g transform="translate(690 390)">
+    <rect width="285" height="145" rx="22" fill="#f5f3ff" stroke="#7c3aed" stroke-width="4"/>
+    <text x="142" y="61" text-anchor="middle" class="node-title">LLM 流式响应</text>
+    <text x="142" y="102" text-anchor="middle" class="node-text" style="font-size:18px">Request → Chunk → Message</text>
+  </g>
+
+  <g transform="translate(1060 378)">
+    <path d="M 130 0 L 260 84 L 130 168 L 0 84 Z" fill="#fffbeb" stroke="#f59e0b" stroke-width="3"/>
+    <text x="130" y="76" text-anchor="middle" class="node-title">存在</text>
+    <text x="130" y="110" text-anchor="middle" class="node-title">Tool Call？</text>
+  </g>
+
+  <g transform="translate(1545 405)">
+    <rect width="220" height="120" rx="20" fill="#ecfdf5" stroke="#10b981" stroke-width="3"/>
+    <text x="110" y="52" text-anchor="middle" class="node-title">Final</text>
+    <text x="110" y="87" text-anchor="middle" class="node-text">Turn End</text>
+  </g>
+
+  <g transform="translate(1025 650)">
+    <rect width="330" height="145" rx="22" fill="#fffbeb" stroke="#f59e0b" stroke-width="3"/>
+    <text x="165" y="61" text-anchor="middle" class="node-title">策略与工具执行</text>
+    <text x="165" y="102" text-anchor="middle" class="node-text">Approval · Guard · Sandbox</text>
+  </g>
+
+  <g transform="translate(640 650)">
+    <rect width="300" height="145" rx="22" fill="#ecfdf5" stroke="#059669" stroke-width="3"/>
+    <ellipse cx="150" cy="22" rx="147" ry="20" fill="#d1fae5" stroke="#059669" stroke-width="3"/>
+    <text x="150" y="72" text-anchor="middle" class="node-title">Session Event Log</text>
+    <text x="150" y="108" text-anchor="middle" class="node-text">追加 tool / result</text>
+  </g>
+
+  <path d="M 245 480 L 335 480" class="main"/>
+  <path d="M 625 462 L 675 462" class="main"/>
+  <path d="M 975 462 L 1045 462" class="main"/>
+  <path d="M 1320 462 L 1530 462" class="neutral"/>
+  <text x="1415" y="447" text-anchor="middle" class="edge-label">否</text>
+  <path d="M 1190 546 L 1190 635" class="main"/>
+  <text x="1210" y="604" class="edge-label">是</text>
+  <path d="M 1025 722 L 955 722" class="main"/>
+  <path d="M 640 722 C 525 722 488 635 488 550" class="main"/>
+  <text x="510" y="687" class="edge-label">下一 Step</text>
+
+  <path d="M 470 210 L 470 375" class="plugin-edge"/>
+  <path d="M 810 210 L 810 375" class="plugin-edge"/>
+  <path d="M 1515 695 L 1370 695" class="plugin-edge"/>
+
+  <g transform="translate(1395 138)">
+    <rect width="330" height="66" rx="33" fill="#eff6ff"/>
+    <text x="165" y="42" text-anchor="middle" class="plugin">1 Turn = 1…N Steps</text>
+  </g>
+
+  <text x="890" y="875" text-anchor="middle" class="subtitle">插件贡献模型、上下文和工具；Loop 根据结果决定下一步</text>
+</svg>
