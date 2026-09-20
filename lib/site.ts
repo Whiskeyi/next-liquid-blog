@@ -117,9 +117,9 @@ export const siteConfig = {
       },
       {
         period: "2026.01 - 至今",
-        title: "全栈开发",
+        title: "全栈 & Agent开发",
         company: "阿里巴巴集团 · 淘宝闪购",
-        points: ["参与零售业务研发、AI Coding平台建设与FDE实践"]
+        points: ["参与零售业务、AI Coding平台与商家端Agent研发"]
       }
     ]
   }
