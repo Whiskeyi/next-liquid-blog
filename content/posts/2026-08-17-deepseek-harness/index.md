@@ -2,7 +2,7 @@
 title: "深入 DeepSeek Harness 源码和开发过程——我学到了什么"
 header-img: imgs/dsh-layered-architecture.svg
 catalog: true
-date: 2026-08-17 15:37:26
+date: 2026-08-16 15:37:26
 subtitle: "从插件运行时、Agent Loop 到研发治理，拆解 DeepSeek Harness 的设计取舍"
 description: "深入 DeepSeek Harness 的源码与开发历史，梳理 Cordis 微内核、插件化 Agent Loop、会话轨迹、能力发现、上下文治理与 AI 原生研发流程。"
 tags:
