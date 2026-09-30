@@ -2,79 +2,82 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+const revealSelector =
+  ".archive-overview, .archive-year, .about-hero, .about-timeline-head, .article-hero-content, .article-toc, .article-content, .archive-item";
 
 export function SiteMotion() {
   const pathname = usePathname();
 
   useEffect(() => {
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduceMotion) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    gsap.registerPlugin(ScrollTrigger);
+    const animations: Animation[] = [];
+    const page = document.querySelector<HTMLElement>("main");
+    const nav = document.querySelector<HTMLElement>(".glass-nav");
 
-    const context = gsap.context(() => {
-      const nav = document.querySelector<HTMLElement>(".glass-nav");
-      const page = document.querySelector<HTMLElement>("main");
-
-      if (page) {
-        gsap.fromTo(
-          page,
-          { y: 8, opacity: 0.96 },
-          { y: 0, opacity: 1, duration: 0.24, ease: "power2.out", clearProps: "transform,opacity" }
-        );
-      }
-
-      if (nav) {
-        gsap.fromTo(
-          nav,
-          { y: -14, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.52, ease: "power3.out" }
-        );
-      }
-
-      gsap.utils
-        .toArray<HTMLElement>(
-          ".archive-overview, .archive-year, .about-hero, .about-timeline-head, .article-hero-content, .article-toc, .article-content"
+    if (page) {
+      animations.push(
+        page.animate(
+          [
+            { transform: "translateY(8px)", opacity: 0.96 },
+            { transform: "translateY(0)", opacity: 1 }
+          ],
+          { duration: 240, easing: "ease-out", fill: "backwards" }
         )
-        .forEach((element) => {
-          gsap.fromTo(
-            element,
-            { y: 16, opacity: 0 },
-            {
-              y: 0,
-              opacity: 1,
-              duration: 0.42,
-              ease: "power2.out",
-              scrollTrigger: {
-                trigger: element,
-                start: "top 88%",
-                once: true
+      );
+    }
+
+    if (nav) {
+      animations.push(
+        nav.animate(
+          [
+            { transform: "translateY(-14px)", opacity: 0 },
+            { transform: "translateY(0)", opacity: 1 }
+          ],
+          { duration: 480, easing: "cubic-bezier(0.22, 1, 0.36, 1)", fill: "backwards" }
+        )
+      );
+    }
+
+    const revealElements = [...document.querySelectorAll<HTMLElement>(revealSelector)];
+    const archiveIndexes = new Map(
+      revealElements
+        .filter((element) => element.classList.contains("archive-item"))
+        .map((element, index) => [element, index])
+    );
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+
+          const element = entry.target as HTMLElement;
+          const archiveIndex = archiveIndexes.get(element) ?? 0;
+          animations.push(
+            element.animate(
+              [
+                { transform: "translateY(16px)", opacity: 0 },
+                { transform: "translateY(0)", opacity: 1 }
+              ],
+              {
+                duration: 400,
+                delay: Math.min(archiveIndex, 8) * 24,
+                easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+                fill: "backwards"
               }
-            }
+            )
           );
+          observer.unobserve(element);
         });
+      },
+      { rootMargin: "0px 0px -10%" }
+    );
 
-      const archiveItems = gsap.utils.toArray<HTMLElement>(".archive-item");
-      if (archiveItems.length) {
-        ScrollTrigger.batch(archiveItems, {
-          start: "top 92%",
-          once: true,
-          onEnter: (batch) => {
-            gsap.fromTo(
-              batch,
-              { y: 16, opacity: 0 },
-              { y: 0, opacity: 1, duration: 0.38, ease: "power2.out", stagger: 0.03 }
-            );
-          }
-        });
-      }
-
-    });
+    revealElements.forEach((element) => observer.observe(element));
 
     return () => {
-      context.revert();
+      observer.disconnect();
+      animations.forEach((animation) => animation.cancel());
     };
   }, [pathname]);
 

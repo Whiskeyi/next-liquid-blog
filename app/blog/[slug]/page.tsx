@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CalendarDays, Clock3, Eye, Hash } from "lucide-react";
@@ -7,6 +6,7 @@ import { ArticleReadingTools } from "@/components/article-reading-tools";
 import { ArticleToc } from "@/components/article-toc";
 import { ImageZoomTrigger } from "@/components/image-with-zoom";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
+import { ResponsiveImage } from "@/components/responsive-image";
 import { ViewCounter } from "@/components/view-counter";
 import { getAbsolutePostUrl, getAllPosts, getPostBySlug } from "@/lib/posts";
 import { siteConfig, withBasePath } from "@/lib/site";
@@ -78,12 +78,13 @@ export default async function BlogPostPage({ params }: PageProps) {
                 buttonClassName="article-hero-image-button"
                 buttonLabel={`查看大图：${post.title} 封面图`}
               >
-                <Image
+                <ResponsiveImage
                   src={post.cover}
+                  sourceWidth={post.coverWidth}
                   alt=""
                   fill
-                  priority
                   loading="eager"
+                  fetchPriority="high"
                   sizes={coverSizes}
                 />
               </ImageZoomTrigger>

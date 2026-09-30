@@ -7,7 +7,7 @@ import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import { CodeBlock } from "@/components/code-block";
 import { ImageWithZoom } from "@/components/image-with-zoom";
 import { createHeadingIdRegistry } from "@/lib/heading-ids";
-import { normalizeAssetPath } from "@/lib/posts";
+import { getPostImageDimensions, normalizeAssetPath } from "@/lib/posts";
 import { normalizeSiteHref } from "@/lib/site";
 
 type MarkdownRendererProps = {
@@ -77,6 +77,22 @@ function rehypeHeadingIds() {
   };
 }
 
+function rehypeArticleImageDimensions(slug: string) {
+  return (tree: HastNode) => {
+    visitNodes(tree, (node) => {
+      if (node.tagName !== "img") return;
+
+      const properties = node.properties ?? {};
+      const rawSrc = properties.src ?? properties.dataSrc ?? properties["data-src"];
+      if (typeof rawSrc !== "string") return;
+
+      const dimensions = getPostImageDimensions(rawSrc, slug);
+      if (!dimensions) return;
+      node.properties = { ...properties, ...dimensions };
+    });
+  };
+}
+
 function textNode(value: string): MarkdownNode {
   return { type: "text", value };
 }
@@ -141,6 +157,7 @@ export async function MarkdownRenderer({ content, slug }: MarkdownRendererProps)
         rehypePlugins={[
           rehypeRaw,
           [rehypeSanitize, sanitizeSchema],
+          [rehypeArticleImageDimensions, slug],
           rehypeHeadingIds,
           [
             rehypeAutolinkHeadings,

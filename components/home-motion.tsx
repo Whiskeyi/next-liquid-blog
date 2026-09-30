@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+const entranceTiming: KeyframeAnimationOptions = {
+  duration: 620,
+  easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+  fill: "backwards"
+};
 
 export function HomeMotion() {
   useEffect(() => {
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const root = document.documentElement;
     const previousScrollBehavior = root.style.scrollBehavior;
 
@@ -14,73 +17,62 @@ export function HomeMotion() {
     window.scrollTo(0, 0);
     root.style.scrollBehavior = previousScrollBehavior;
 
-    if (reduceMotion) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    gsap.registerPlugin(ScrollTrigger);
+    const animations: Animation[] = [];
+    const heroVisual = document.querySelector<HTMLElement>(".hero-visual");
+    const heroCopyItems = document.querySelectorAll<HTMLElement>(".hero-copy > *");
+    const feedHeading = document.querySelector<HTMLElement>(".home-hero + .page-shell .section-heading");
 
-    const context = gsap.context(() => {
-      const hero = document.querySelector<HTMLElement>(".home-hero");
-      const heroVisual = hero?.querySelector<HTMLElement>(".hero-visual");
-      const heroCopyItems = gsap.utils.toArray<HTMLElement>(".hero-copy > *");
-      const feedHeading = document.querySelector<HTMLElement>(".home-hero + .page-shell .section-heading");
-
-      if (!hero || !heroVisual) return;
-      const heroElement = hero;
-      const heroVisualElement = heroVisual;
-
-      function createHeroScrollMotion() {
-        const heroTimeline = gsap.timeline({
-          scrollTrigger: {
-            trigger: heroElement,
-            start: "top top",
-            end: "120% top",
-            scrub: 1.15
-          }
-        });
-
-        heroTimeline
-          .to(heroVisualElement, { yPercent: -6, scale: 0.94, opacity: 0, ease: "none" }, 0)
-          .to(heroCopyItems, { y: -58, opacity: 0.18, ease: "none", stagger: 0.025 }, 0);
-      }
-
-      const introTimeline = gsap.timeline({ onComplete: createHeroScrollMotion });
-
-      introTimeline.fromTo(
-        heroVisualElement,
-        { y: 18, opacity: 0, scale: 0.985 },
-        { y: 0, opacity: 1, scale: 1, duration: 0.72, ease: "power3.out" }
+    if (heroVisual) {
+      animations.push(
+        heroVisual.animate(
+          [
+            { transform: "translateY(18px) scale(0.985)", opacity: 0 },
+            { transform: "translateY(0) scale(1)", opacity: 1 }
+          ],
+          entranceTiming
+        )
       );
+    }
 
-      if (heroCopyItems.length) {
-        introTimeline.fromTo(
-          heroCopyItems,
-          { y: 18, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.52, ease: "power3.out", stagger: 0.07 },
-          0.08
-        );
-      }
-
-      if (feedHeading) {
-        gsap.fromTo(
-          feedHeading,
-          { y: 72, opacity: 0, scale: 0.975 },
-          {
-            y: 0,
-            opacity: 1,
-            scale: 1,
-            ease: "none",
-            scrollTrigger: {
-              trigger: feedHeading,
-              start: "top 96%",
-              end: "top 58%",
-              scrub: 0.45
-            }
-          }
-        );
-      }
+    heroCopyItems.forEach((element, index) => {
+      animations.push(
+        element.animate(
+          [
+            { transform: "translateY(18px)", opacity: 0 },
+            { transform: "translateY(0)", opacity: 1 }
+          ],
+          { ...entranceTiming, duration: 520, delay: 80 + index * 70 }
+        )
+      );
     });
 
-    return () => context.revert();
+    const observer = feedHeading
+      ? new IntersectionObserver(
+          ([entry]) => {
+            if (!entry?.isIntersecting) return;
+            animations.push(
+              feedHeading.animate(
+                [
+                  { transform: "translateY(28px)", opacity: 0 },
+                  { transform: "translateY(0)", opacity: 1 }
+                ],
+                entranceTiming
+              )
+            );
+            observer?.disconnect();
+          },
+          { rootMargin: "0px 0px -12%" }
+        )
+      : null;
+
+    if (feedHeading) observer?.observe(feedHeading);
+
+    return () => {
+      observer?.disconnect();
+      animations.forEach((animation) => animation.cancel());
+    };
   }, []);
 
   return null;

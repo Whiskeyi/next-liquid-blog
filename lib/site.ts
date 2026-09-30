@@ -10,6 +10,12 @@ type TimelineItem = {
   points: string[];
 };
 
+type HeroImage = {
+  src: string;
+  width: number;
+  height: number;
+};
+
 type ProfileReadmeItem = {
   label: string;
   value: string;
@@ -35,7 +41,7 @@ type SiteConfig = {
     feedEyebrowSuffix: string;
     feedTitle: string;
     feedDescription: string;
-    heroImages: string[];
+    heroImages: HeroImage[];
   };
   about: {
     title: string;
@@ -77,15 +83,15 @@ export const siteConfig = {
     feedTitle: "Latest Notes",
     feedDescription: "围绕前端工程、React、JavaScript 与系统化学习整理的长期笔记。",
     heroImages: [
-      "/img/header_img/blue-wave.jpg",
-      "/img/header_img/star-trails.jpg",
-      "/img/header_img/ocean-shore.jpg",
-      "/img/header_img/ocean-wave.jpg",
-      "/img/header_img/valley-stars.jpg",
-      "/img/header_img/green-beams.jpg",
-      "/img/header_img/city-night.jpg",
-      "/img/header_img/snowy-lake.jpg",
-      "/img/header_img/boat-wake.jpg"
+      { src: "/img/header_img/blue-wave.jpg", width: 1600, height: 1066 },
+      { src: "/img/header_img/star-trails.jpg", width: 3182, height: 1640 },
+      { src: "/img/header_img/ocean-shore.jpg", width: 2359, height: 1327 },
+      { src: "/img/header_img/ocean-wave.jpg", width: 2460, height: 1640 },
+      { src: "/img/header_img/valley-stars.jpg", width: 2457, height: 1640 },
+      { src: "/img/header_img/green-beams.jpg", width: 2460, height: 1640 },
+      { src: "/img/header_img/city-night.jpg", width: 2460, height: 1640 },
+      { src: "/img/header_img/snowy-lake.jpg", width: 2460, height: 1640 },
+      { src: "/img/header_img/boat-wake.jpg", width: 2460, height: 1640 }
     ]
   },
   about: {

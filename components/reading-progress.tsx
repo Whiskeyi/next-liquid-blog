@@ -9,7 +9,10 @@ export function ReadingProgress() {
   const progressRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let frameId = 0;
+
     function updateProgress() {
+      frameId = 0;
       const progressElement = progressRef.current;
 
       if (!progressElement) {
@@ -23,13 +26,19 @@ export function ReadingProgress() {
       progressElement.style.transform = `scaleX(${progress / PERCENT_MAX})`;
     }
 
+    function requestProgressUpdate() {
+      if (frameId) return;
+      frameId = window.requestAnimationFrame(updateProgress);
+    }
+
     updateProgress();
-    window.addEventListener("scroll", updateProgress, { passive: true });
-    window.addEventListener("resize", updateProgress);
+    window.addEventListener("scroll", requestProgressUpdate, { passive: true });
+    window.addEventListener("resize", requestProgressUpdate);
 
     return () => {
-      window.removeEventListener("scroll", updateProgress);
-      window.removeEventListener("resize", updateProgress);
+      if (frameId) window.cancelAnimationFrame(frameId);
+      window.removeEventListener("scroll", requestProgressUpdate);
+      window.removeEventListener("resize", requestProgressUpdate);
     };
   }, []);
 

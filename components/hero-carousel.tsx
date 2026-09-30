@@ -3,11 +3,17 @@
 import { useEffect, useRef, useState } from "react";
 import type { PointerEvent } from "react";
 import { flushSync } from "react-dom";
-import { gsap } from "gsap";
-import { withBasePath } from "@/lib/site";
+import { ResponsiveImage } from "@/components/responsive-image";
+import { getResponsiveImageProps } from "@/lib/image-variants";
+
+type HeroCarouselImage = {
+  src: string;
+  width: number;
+  height: number;
+};
 
 type HeroCarouselProps = {
-  images: string[];
+  images: HeroCarouselImage[];
 };
 
 type SwipeStart = {
@@ -21,23 +27,32 @@ type SlideDirection = "next" | "previous";
 type ImageLayer = "active" | "previous" | "peek" | "idle";
 
 const SLIDE_INTERVAL_MS = 8000;
+const HERO_IMAGE_SIZES =
+  "(min-width: 2880px) 2160px, (min-width: 1744px) 1680px, (min-width: 1600px) calc(100vw - 64px), (min-width: 1168px) 1120px, (max-width: 640px) calc(100vw - 28px), calc(100vw - 48px)";
 const TOUCH_SWIPE = {
   minDistancePx: 72,
   minDistanceRatio: 0.18,
   axisRatio: 1.18,
-  settleDurationSeconds: 0.5,
-  resetDurationSeconds: 0.34
+  settleDurationMs: 500,
+  resetDurationMs: 340
 } as const;
 const DESKTOP_PARALLAX = {
   maxOffsetPx: 14,
   pointerCenterRatio: 0.5,
-  easingDurationSeconds: 0.8
+  easingFactor: 0.14,
+  settleThreshold: 0.02
 } as const;
+
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
 
 export function HeroCarousel({ images }: HeroCarouselProps) {
   const carouselRef = useRef<HTMLDivElement | null>(null);
-  const moveXRef = useRef<((value: number) => void) | null>(null);
-  const moveYRef = useRef<((value: number) => void) | null>(null);
+  const parallaxFrameRef = useRef<number | null>(null);
+  const dragAnimationFrameRef = useRef<number | null>(null);
+  const parallaxTargetRef = useRef({ x: 0, y: 0 });
+  const parallaxCurrentRef = useRef({ x: 0, y: 0 });
   const swipeStartRef = useRef<SwipeStart | null>(null);
   const dragPreviewOffsetRef = useRef(0);
   const touchSettlingRef = useRef(false);
@@ -48,7 +63,7 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
   const [isTouchInteracting, setIsTouchInteracting] = useState(false);
 
   useEffect(() => {
-    if (images.length <= 1 || isTouchInteracting) return;
+    if (images.length <= 1 || isTouchInteracting || prefersReducedMotion()) return;
 
     const timer = window.setTimeout(() => {
       const carousel = carouselRef.current;
@@ -66,26 +81,64 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
   }, [activeIndex, images.length, isTouchInteracting]);
 
   useEffect(() => {
-    const carousel = carouselRef.current;
-    if (!carousel) return;
-
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduceMotion) return;
-
-    moveXRef.current = gsap.quickTo(carousel, "--hero-x", {
-      duration: DESKTOP_PARALLAX.easingDurationSeconds,
-      ease: "power3.out"
-    });
-    moveYRef.current = gsap.quickTo(carousel, "--hero-y", {
-      duration: DESKTOP_PARALLAX.easingDurationSeconds,
-      ease: "power3.out"
-    });
-
     return () => {
-      moveXRef.current = null;
-      moveYRef.current = null;
+      if (parallaxFrameRef.current !== null) window.cancelAnimationFrame(parallaxFrameRef.current);
+      if (dragAnimationFrameRef.current !== null) window.cancelAnimationFrame(dragAnimationFrameRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (images.length <= 1) return;
+
+    const timer = window.setTimeout(() => {
+      const nextImage = images[(activeIndex + 1) % images.length];
+      const source = getResponsiveImageProps(nextImage.src, nextImage.width);
+      const preload = new window.Image();
+      preload.decoding = "async";
+      preload.sizes = HERO_IMAGE_SIZES;
+      if (source.srcSet) preload.srcset = source.srcSet;
+      preload.src = source.src;
+    }, 600);
+
+    return () => window.clearTimeout(timer);
+  }, [activeIndex, images]);
+
+  function updateParallaxTarget(x: number, y: number) {
+    if (prefersReducedMotion()) return;
+
+    parallaxTargetRef.current = { x, y };
+    if (parallaxFrameRef.current !== null) return;
+
+    function renderFrame() {
+      const carousel = carouselRef.current;
+      if (!carousel) {
+        parallaxFrameRef.current = null;
+        return;
+      }
+
+      const current = parallaxCurrentRef.current;
+      const target = parallaxTargetRef.current;
+      const next = {
+        x: current.x + (target.x - current.x) * DESKTOP_PARALLAX.easingFactor,
+        y: current.y + (target.y - current.y) * DESKTOP_PARALLAX.easingFactor
+      };
+      const settled =
+        Math.abs(target.x - next.x) < DESKTOP_PARALLAX.settleThreshold &&
+        Math.abs(target.y - next.y) < DESKTOP_PARALLAX.settleThreshold;
+
+      parallaxCurrentRef.current = settled ? target : next;
+      carousel.style.setProperty("--hero-x", String(settled ? target.x : next.x));
+      carousel.style.setProperty("--hero-y", String(settled ? target.y : next.y));
+
+      if (settled) {
+        parallaxFrameRef.current = null;
+      } else {
+        parallaxFrameRef.current = window.requestAnimationFrame(renderFrame);
+      }
+    }
+
+    parallaxFrameRef.current = window.requestAnimationFrame(renderFrame);
+  }
 
   function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
     if (event.pointerType === "touch") {
@@ -115,13 +168,11 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
     const y =
       ((event.clientY - rect.top) / rect.height - DESKTOP_PARALLAX.pointerCenterRatio) *
       DESKTOP_PARALLAX.maxOffsetPx;
-    moveXRef.current?.(x);
-    moveYRef.current?.(y);
+    updateParallaxTarget(x, y);
   }
 
   function resetParallax() {
-    moveXRef.current?.(0);
-    moveYRef.current?.(0);
+    updateParallaxTarget(0, 0);
   }
 
   function finishTouchDrag(target: HTMLDivElement) {
@@ -135,15 +186,33 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
     target.style.setProperty("--hero-drag-x", "0px");
   }
 
-  function animateTouchDrag(target: HTMLDivElement, x: number, duration: number, onComplete: () => void) {
-    gsap.killTweensOf(target, "--hero-drag-x");
-    gsap.to(target, {
-      "--hero-drag-x": `${x}px`,
-      duration,
-      ease: "power3.out",
-      overwrite: "auto",
-      onComplete
-    });
+  function animateTouchDrag(target: HTMLDivElement, x: number, durationMs: number, onComplete: () => void) {
+    if (dragAnimationFrameRef.current !== null) window.cancelAnimationFrame(dragAnimationFrameRef.current);
+
+    if (prefersReducedMotion()) {
+      target.style.setProperty("--hero-drag-x", `${x}px`);
+      onComplete();
+      return;
+    }
+
+    const startX = Number.parseFloat(target.style.getPropertyValue("--hero-drag-x")) || 0;
+    const startedAt = performance.now();
+
+    function renderFrame(now: number) {
+      const progress = Math.min(1, (now - startedAt) / durationMs);
+      const eased = 1 - (1 - progress) ** 3;
+      target.style.setProperty("--hero-drag-x", `${startX + (x - startX) * eased}px`);
+
+      if (progress < 1) {
+        dragAnimationFrameRef.current = window.requestAnimationFrame(renderFrame);
+        return;
+      }
+
+      dragAnimationFrameRef.current = null;
+      onComplete();
+    }
+
+    dragAnimationFrameRef.current = window.requestAnimationFrame(renderFrame);
   }
 
   function resetTouchDrag(target: HTMLDivElement) {
@@ -155,7 +224,7 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
     touchSettlingRef.current = true;
     target.removeAttribute("data-dragging");
     target.setAttribute("data-settling", "true");
-    animateTouchDrag(target, 0, TOUCH_SWIPE.resetDurationSeconds, () => finishTouchDrag(target));
+    animateTouchDrag(target, 0, TOUCH_SWIPE.resetDurationMs, () => finishTouchDrag(target));
   }
 
   function finishCommittedTouchDrag(target: HTMLDivElement, offset: number) {
@@ -229,7 +298,7 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
       }
     });
 
-    animateTouchDrag(target, travelX, TOUCH_SWIPE.settleDurationSeconds, () =>
+    animateTouchDrag(target, travelX, TOUCH_SWIPE.settleDurationMs, () =>
       finishCommittedTouchDrag(target, offset)
     );
   }
@@ -239,7 +308,10 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
     if (event.target instanceof Element && event.target.closest(".hero-carousel-progress")) return;
     if (touchSettlingRef.current) return;
 
-    gsap.killTweensOf(event.currentTarget, "--hero-drag-x");
+    if (dragAnimationFrameRef.current !== null) {
+      window.cancelAnimationFrame(dragAnimationFrameRef.current);
+      dragAnimationFrameRef.current = null;
+    }
     dragPreviewOffsetRef.current = 0;
     setDragPreviewOffset(0);
     setIsTouchInteracting(true);
@@ -313,6 +385,8 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
     >
       {images.map((image, index) => {
         const layer = getImageLayer(index);
+        if (layer === "idle") return null;
+
         const isPeek = layer === "peek";
         const direction = isPeek
           ? dragPreviewOffset > 0
@@ -323,16 +397,18 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
             : undefined;
 
         return (
-          <img
-            key={image}
-            src={withBasePath(image)}
+          <ResponsiveImage
+            key={image.src}
+            src={image.src}
+            sourceWidth={image.width}
             alt=""
             data-layer={layer}
             data-direction={direction}
             data-animated={layer === "active" && showTransitionPrevious}
+            sizes={HERO_IMAGE_SIZES}
             decoding="async"
             draggable={false}
-            fetchPriority={index === 0 ? "high" : "auto"}
+            fetchPriority={index === 0 && activeIndex === 0 ? "high" : "auto"}
             loading="eager"
           />
         );
@@ -340,7 +416,7 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
       <div className="hero-carousel-progress">
         {images.map((image, index) => (
           <button
-            key={image}
+            key={image.src}
             type="button"
             aria-label={`切换到第 ${index + 1} 张轮播图`}
             aria-current={index === activeIndex}

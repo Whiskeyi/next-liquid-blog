@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Command } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, KeyboardEvent, MouseEvent } from "react";
 import { glassStyle } from "@/components/glass-style";
+import { ResponsiveImage } from "@/components/responsive-image";
 import type { PostMeta } from "@/lib/posts";
 import { getShortcutLabel } from "@/lib/shortcuts";
 
@@ -15,7 +15,7 @@ const COVERED_CARD_VISIBLE_LABELS = 2;
 const TEXT_CARD_VISIBLE_LABELS = 2;
 const CARD_INDEX_PAD_LENGTH = 2;
 const POST_CARD_IMAGE_SIZES =
-  "(max-width: 640px) calc((100vw - 40px) / 2), (max-width: 920px) calc((100vw - 46px) / 2), (min-width: 2880px) 420px, (min-width: 1600px) 410px, 350px";
+  "(max-width: 420px) calc(100vw - 28px), (max-width: 640px) calc((100vw - 40px) / 2), (max-width: 920px) calc((100vw - 46px) / 2), (min-width: 2880px) 420px, (min-width: 1600px) 410px, 350px";
 
 type PostCardProps = {
   post: PostMeta;
@@ -25,7 +25,9 @@ type PostCardProps = {
 
 export function PostCard({ post, index = 0, shortcutActive = false }: PostCardProps) {
   const router = useRouter();
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  const [imageStatus, setImageStatus] = useState<"loading" | "loaded" | "error">("loading");
+  const [useOriginalImage, setUseOriginalImage] = useState(false);
   const [pending, setPending] = useState(false);
   const labels = Array.from(new Set([...post.categories, ...post.tags]));
   const href = `/blog/${post.slug}`;
@@ -48,6 +50,33 @@ export function PostCard({ post, index = 0, shortcutActive = false }: PostCardPr
   ) : (
     String(index + 1).padStart(CARD_INDEX_PAD_LENGTH, "0")
   );
+
+  useEffect(() => {
+    const image = imageRef.current;
+    if (!image) return;
+
+    const syncStatus = () => {
+      if (!image.complete) {
+        setImageStatus("loading");
+      } else if (image.naturalWidth > 0) {
+        setImageStatus("loaded");
+      } else if (image.getAttribute("srcset") && !useOriginalImage) {
+        setUseOriginalImage(true);
+      } else {
+        setImageStatus("error");
+      }
+    };
+
+    // Cached images can finish before hydration or a responsive column remount.
+    image.addEventListener("load", syncStatus);
+    image.addEventListener("error", syncStatus);
+    syncStatus();
+
+    return () => {
+      image.removeEventListener("load", syncStatus);
+      image.removeEventListener("error", syncStatus);
+    };
+  }, [post.cover, useOriginalImage]);
 
   function markPending() {
     setPending(true);
@@ -78,17 +107,25 @@ export function PostCard({ post, index = 0, shortcutActive = false }: PostCardPr
       onKeyDown={handleKeyDown}
     >
       {post.hasCover ? (
-        <div className="post-card-media" style={mediaStyle} data-loaded={imageLoaded} aria-hidden="true">
-          <Image
+        <div
+          className="post-card-media"
+          style={mediaStyle}
+          data-loaded={imageStatus === "loaded"}
+          data-error={imageStatus === "error"}
+          aria-hidden="true"
+        >
+          <ResponsiveImage
+            ref={imageRef}
             src={post.cover}
+            sourceWidth={useOriginalImage ? undefined : post.coverWidth}
             alt=""
             fill
             sizes={POST_CARD_IMAGE_SIZES}
-            loading={index < 5 ? "eager" : "lazy"}
-            fetchPriority={index < 2 ? "high" : "auto"}
+            loading="lazy"
+            fetchPriority="auto"
             decoding="async"
-            onLoad={() => setImageLoaded(true)}
           />
+          {imageStatus === "error" ? <span className="post-card-image-error">封面暂时无法显示</span> : null}
           <div className="post-card-media-shade" />
           <div className="post-index">{shortcut}</div>
         </div>

@@ -13,6 +13,7 @@ const INITIAL_POST_COUNT = 12;
 const POSTS_PER_BATCH = 6;
 const LOAD_MORE_DELAY_MS = 260;
 const LOAD_MORE_ROOT_MARGIN = "900px 0px";
+const MEDIA_ANIMATION_ROOT_MARGIN = "240px 0px";
 const RESPONSIVE_COLUMNS = [
   { mediaQuery: "(max-width: 420px)", count: 1 },
   { mediaQuery: "(max-width: 920px)", count: 2 },
@@ -64,6 +65,7 @@ export function PostFeed({ posts, tags }: PostFeedProps) {
   const [modifierDown, setModifierDown] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_POST_COUNT);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const feedRef = useRef<HTMLElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const loadMoreTimeoutRef = useRef<number | undefined>(undefined);
 
@@ -141,6 +143,23 @@ export function PostFeed({ posts, tags }: PostFeedProps) {
   }, [hasMorePosts, isLoadingMore, loadMorePosts]);
 
   useEffect(() => {
+    const mediaElements = feedRef.current?.querySelectorAll<HTMLElement>(".post-card-media");
+    if (!mediaElements?.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          (entry.target as HTMLElement).dataset.nearViewport = String(entry.isIntersecting);
+        });
+      },
+      { rootMargin: MEDIA_ANIMATION_ROOT_MARGIN }
+    );
+
+    mediaElements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [columnCount, visiblePosts]);
+
+  useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       const modifierPressed = event.metaKey || event.ctrlKey;
       setModifierDown(modifierPressed);
@@ -188,7 +207,7 @@ export function PostFeed({ posts, tags }: PostFeedProps) {
   }, [columnCount, visiblePosts]);
 
   return (
-    <section className="feed-section" aria-label="文章列表">
+    <section ref={feedRef} className="feed-section" aria-label="文章列表">
       <div className="feed-toolbar" style={glassStyle}>
         <label className="search-box">
           <Search size={18} />

@@ -45,6 +45,11 @@ const JPEG_MARKER_PREFIX = 0xff;
 const JPEG_SEGMENT_LENGTH_OFFSET = 2;
 const JPEG_SEGMENT_HEADER_BYTES = 2;
 const JPEG_DIMENSION_OFFSET = { width: 7, height: 5 } as const;
+const SVG_ATTRIBUTE_PATTERNS = {
+  width: /\bwidth\s*=\s*["']([\d.]+)(?:px)?["']/i,
+  height: /\bheight\s*=\s*["']([\d.]+)(?:px)?["']/i,
+  viewBox: /\bviewBox\s*=\s*["'][\d.-]+[\s,]+[\d.-]+[\s,]+([\d.]+)[\s,]+([\d.]+)["']/i
+} as const;
 const JPEG_START_OF_FRAME_MARKERS = new Set([
   0xc0,
   0xc1,
@@ -79,6 +84,8 @@ export type PostMeta = {
   cover: string;
   coverOrientation: CoverOrientation;
   coverAspectRatio: string;
+  coverWidth?: number;
+  coverHeight?: number;
   hasCover: boolean;
   excerpt: string;
   readingMinutes: number;
@@ -119,7 +126,7 @@ type AllPostsCache = {
   posts: Post[];
 };
 
-type ImageDimensions = {
+export type ImageDimensions = {
   width: number;
   height: number;
 };
@@ -127,6 +134,8 @@ type ImageDimensions = {
 type CoverImageMeta = {
   orientation: CoverOrientation;
   aspectRatio: string;
+  width?: number;
+  height?: number;
 };
 
 const EMPTY_COVER_META: CoverImageMeta = {
@@ -322,6 +331,19 @@ function getImageDimensions(src: string | undefined, source?: PostSource): Image
   const buffer = fs.readFileSync(assetPath);
   if (buffer.length < IMAGE_HEADER_MIN_BYTES) return null;
 
+  if (path.extname(assetPath).toLowerCase() === ".svg") {
+    const svg = buffer.toString("utf8");
+    const width = Number(SVG_ATTRIBUTE_PATTERNS.width.exec(svg)?.[1]);
+    const height = Number(SVG_ATTRIBUTE_PATTERNS.height.exec(svg)?.[1]);
+
+    if (width > 0 && height > 0) return { width, height };
+
+    const viewBox = SVG_ATTRIBUTE_PATTERNS.viewBox.exec(svg);
+    const viewBoxWidth = Number(viewBox?.[1]);
+    const viewBoxHeight = Number(viewBox?.[2]);
+    return viewBoxWidth > 0 && viewBoxHeight > 0 ? { width: viewBoxWidth, height: viewBoxHeight } : null;
+  }
+
   if (buffer.toString("ascii", PNG_SIGNATURE_OFFSET, PNG_SIGNATURE_LENGTH) === "PNG") {
     return {
       width: buffer.readUInt32BE(PNG_DIMENSION_OFFSET.width),
@@ -372,7 +394,9 @@ function getCoverImageMeta(src: string | undefined, source: PostSource): CoverIm
 
   return {
     orientation,
-    aspectRatio: `${dimensions.width} / ${dimensions.height}`
+    aspectRatio: `${dimensions.width} / ${dimensions.height}`,
+    width: dimensions.width,
+    height: dimensions.height
   };
 }
 
@@ -399,6 +423,8 @@ function readPost(source: PostSource): Post {
     cover: normalizeAssetPath(coverSource, slug),
     coverOrientation: coverImage.orientation,
     coverAspectRatio: coverImage.aspectRatio,
+    coverWidth: coverImage.width,
+    coverHeight: coverImage.height,
     hasCover: Boolean(coverSource),
     excerpt: makeExcerpt(content, frontmatter.description),
     readingMinutes: calculateReadingMinutes(content, wordCount),
@@ -461,6 +487,11 @@ function getPostSourceBySlug(slug: string): PostSource | null {
 
   return sourceFromPostDirectory(slug) ??
     (fs.existsSync(path.join(POSTS_DIRECTORY, markdownFileName)) ? sourceFromMarkdownFile(markdownFileName) : null);
+}
+
+export function getPostImageDimensions(src: string, slug: string): ImageDimensions | null {
+  const source = getPostSourceBySlug(slug);
+  return source ? getImageDimensions(src, source) : null;
 }
 
 function getSourceModifiedTime(source: PostSource): number {

@@ -210,7 +210,12 @@
   animation:
     media-placeholder-shimmer 1650ms cubic-bezier(0.4, 0, 0.2, 1) infinite,
     media-placeholder-pulse 2200ms ease-in-out infinite alternate;
+  animation-play-state: paused;
   transition: opacity 320ms ease;
+}
+
+.post-card-media[data-near-viewport="true"]:not([data-loaded="true"]):not([data-error="true"])::before {
+  animation-play-state: running;
 }
 
 .post-card-media::after {
@@ -223,9 +228,21 @@
 }
 
 .post-card-media[data-loaded="true"]::before,
-.post-card-media[data-loaded="true"]::after {
+.post-card-media[data-loaded="true"]::after,
+.post-card-media[data-error="true"]::before,
+.post-card-media[data-error="true"]::after {
   opacity: 0;
   animation-play-state: paused;
+}
+
+.post-card-image-error {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 0.85rem;
 }
 
 .post-card[data-cover-orientation="portrait"] .post-card-media {

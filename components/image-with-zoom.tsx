@@ -3,6 +3,7 @@
 import { Minus, Plus, RotateCcw, X } from "lucide-react";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { getResponsiveImageProps } from "@/lib/image-variants";
 
 type ImageWithZoomProps = React.ImgHTMLAttributes<HTMLImageElement> & {
   src: string;
@@ -34,6 +35,7 @@ const SCALE_STEP = 0.1;
 const WHEEL_SCALE_STEP = 0.04;
 const PINCH_SENSITIVITY = 0.58;
 const DOUBLE_CLICK_SCALE = 1.35;
+const ARTICLE_IMAGE_SIZES = "(max-width: 920px) calc(100vw - 36px), 740px";
 
 const defaultTransform: ImageTransform = {
   scale: DEFAULT_SCALE,
@@ -331,11 +333,23 @@ export function ImageZoomTrigger({
   );
 }
 
-export function ImageWithZoom({ src, alt = "", loading, decoding, onLoad, onError, style, ...props }: ImageWithZoomProps) {
+export function ImageWithZoom({
+  src,
+  alt = "",
+  loading,
+  decoding,
+  sizes,
+  onLoad,
+  onError,
+  style,
+  ...props
+}: ImageWithZoomProps) {
   const imageRef = useRef<HTMLImageElement | null>(null);
   const [enhanced, setEnhanced] = useState(false);
   const [status, setStatus] = useState<"loading" | "loaded" | "error">("loading");
   const aspectRatio = getImageAspectRatio(props.width, props.height);
+  const sourceWidth = parseImageDimension(props.width) ?? undefined;
+  const source = getResponsiveImageProps(src, sourceWidth);
 
   useEffect(() => {
     setEnhanced(true);
@@ -391,11 +405,12 @@ export function ImageWithZoom({ src, alt = "", loading, decoding, onLoad, onErro
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           {...props}
+          {...source}
           ref={imageRef}
-          src={src}
           alt={alt}
           loading={loading ?? "lazy"}
           decoding={decoding ?? "async"}
+          sizes={source.srcSet ? sizes ?? ARTICLE_IMAGE_SIZES : sizes}
           style={style}
           onLoad={handleLoad}
           onError={handleError}
