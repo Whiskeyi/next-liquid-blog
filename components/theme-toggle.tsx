@@ -1,9 +1,11 @@
 "use client";
 
+import { useI18n } from "@/components/i18n-provider";
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
+  const { t } = useI18n();
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
@@ -19,7 +21,7 @@ export function ThemeToggle() {
   }
 
   return (
-    <button className="icon-button" type="button" onClick={toggleTheme} aria-label="切换主题">
+    <button className="icon-button" type="button" onClick={toggleTheme} aria-label={t("switchTheme")}>
       {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
     </button>
   );

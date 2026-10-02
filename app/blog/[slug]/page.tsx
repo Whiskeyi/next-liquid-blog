@@ -4,12 +4,15 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CalendarDays, Clock3, Eye, Hash } from "lucide-react";
 import { ArticleReadingTools } from "@/components/article-reading-tools";
 import { ArticleToc } from "@/components/article-toc";
-import { ImageZoomTrigger } from "@/components/image-with-zoom";
+import { ArticleCover } from "@/components/article-cover";
+import { LocalizedDate, LocalizedRegion, LocalizedText } from "@/components/localized";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
-import { ResponsiveImage } from "@/components/responsive-image";
 import { ViewCounter } from "@/components/view-counter";
 import { getAbsolutePostUrl, getAllPosts, getPostBySlug } from "@/lib/posts";
-import { siteConfig, withBasePath } from "@/lib/site";
+import { ArticleLanguageNotice, ArticlePageTitle, LocalizedContent } from "@/components/localized-content";
+import { localizePost } from "@/lib/post-localization";
+import type { Post, PostMeta } from "@/lib/posts";
+import { siteConfig } from "@/lib/site";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -54,7 +57,17 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   if (!post) notFound();
 
+  const english = getPostBySlug(slug, "en")!;
   const posts = getAllPosts();
+  return (
+    <LocalizedContent variants={{
+      "zh-CN": await renderArticle(post, posts),
+      en: await renderArticle(english, posts.map((item) => localizePost(item, "en")))
+    }} />
+  );
+}
+
+async function renderArticle(post: Post, posts: PostMeta[]) {
   const currentIndex = posts.findIndex((item) => item.slug === post.slug);
   const previousPost = currentIndex >= 0 ? posts[currentIndex + 1] : null;
   const nextPost = currentIndex > 0 ? posts[currentIndex - 1] : null;
@@ -68,52 +81,36 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   return (
     <main className="article-page">
-      <article className={articleClassName}>
+      <ArticlePageTitle title={post.title} />
+      <article className={articleClassName} lang={post.language}>
         <header className={heroClassName} data-cover-orientation={post.coverOrientation}>
           {post.hasCover ? (
-            <figure className="article-hero-image" aria-label={`${post.title} 封面图`}>
-              <ImageZoomTrigger
-                src={post.cover}
-                alt={`${post.title} 封面图`}
-                buttonClassName="article-hero-image-button"
-                buttonLabel={`查看大图：${post.title} 封面图`}
-              >
-                <ResponsiveImage
-                  src={post.cover}
-                  sourceWidth={post.coverWidth}
-                  alt=""
-                  fill
-                  loading="eager"
-                  fetchPriority="high"
-                  sizes={coverSizes}
-                />
-              </ImageZoomTrigger>
-              <span className="article-hero-watermark" aria-hidden="true">
-                <img src={withBasePath("/img/signature/signature.png")} alt="" />
-              </span>
-            </figure>
+            <ArticleCover
+              post={{ title: post.title, cover: post.cover, coverWidth: post.coverWidth }}
+              sizes={coverSizes}
+            />
           ) : null}
           <div className="article-hero-content">
             <Link className="back-link" href="/">
               <ArrowLeft size={17} />
-              返回首页
+              <LocalizedText id="backHome" />
             </Link>
             <div className="article-meta">
               <span>
                 <CalendarDays size={15} />
-                {post.displayDate}
+                <LocalizedDate date={post.date} />
               </span>
               <span>
                 <Clock3 size={15} />
-                {post.readingMinutes} 分钟
+                <LocalizedText id="readingMinutes" values={{ count: post.readingMinutes }} />
               </span>
               <span>
                 <Hash size={15} />
-                {post.wordCount.toLocaleString("zh-CN")} 字
+                <LocalizedText id="wordCount" values={{ count: post.wordCount }} />
               </span>
               <span>
                 <Eye size={15} />
-                <ViewCounter /> 次阅读
+                <ViewCounter /> <LocalizedText id="views" />
               </span>
             </div>
             <h1>{post.title}</h1>
@@ -131,17 +128,18 @@ export default async function BlogPostPage({ params }: PageProps) {
         <div className="article-layout">
           <ArticleToc headings={post.headings} />
           <div className="article-content">
+            <ArticleLanguageNotice language={post.language} />
             <MarkdownRenderer content={post.content} slug={post.slug} />
             {previousPost || nextPost ? (
-              <nav className="article-neighbor-nav" aria-label="相邻文章">
+              <LocalizedRegion as="nav" className="article-neighbor-nav" label="neighbors">
                 {previousPost ? (
                   <Link className="article-neighbor-link article-neighbor-link-prev" href={`/blog/${previousPost.slug}`}>
                     <span className="article-neighbor-direction">
                       <ArrowLeft size={16} />
-                      上一篇
+                      <LocalizedText id="previousPost" />
                     </span>
                     <strong>{previousPost.title}</strong>
-                    <time dateTime={previousPost.date}>{previousPost.displayDate}</time>
+                    <LocalizedDate date={previousPost.date} />
                   </Link>
                 ) : (
                   <span className="article-neighbor-empty" aria-hidden="true" />
@@ -149,16 +147,16 @@ export default async function BlogPostPage({ params }: PageProps) {
                 {nextPost ? (
                   <Link className="article-neighbor-link article-neighbor-link-next" href={`/blog/${nextPost.slug}`}>
                     <span className="article-neighbor-direction">
-                      下一篇
+                      <LocalizedText id="nextPost" />
                       <ArrowRight size={16} />
                     </span>
                     <strong>{nextPost.title}</strong>
-                    <time dateTime={nextPost.date}>{nextPost.displayDate}</time>
+                    <LocalizedDate date={nextPost.date} />
                   </Link>
                 ) : (
                   <span className="article-neighbor-empty" aria-hidden="true" />
                 )}
-              </nav>
+              </LocalizedRegion>
             ) : null}
           </div>
         </div>

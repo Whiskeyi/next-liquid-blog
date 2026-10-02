@@ -11,9 +11,12 @@
   },
   "scripts": {
     "new:post": "node scripts/create-post.mjs",
+    "check:translations": "node scripts/check-post-translations.mjs",
+    "test:translations": "node --test tests/post-translations.test.mjs",
+    "sync:translations": "node scripts/check-post-translations.mjs --sync",
     "sync:post-assets": "node scripts/sync-post-assets.mjs",
     "dev": "node scripts/sync-post-assets.mjs && next dev",
-    "build": "node scripts/sync-post-assets.mjs && next build --webpack",
+    "build": "node scripts/check-post-translations.mjs && node scripts/sync-post-assets.mjs && next build --webpack",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"

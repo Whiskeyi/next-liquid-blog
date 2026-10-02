@@ -3,6 +3,7 @@ import { BackToTop } from "@/components/back-to-top";
 import { ReadingProgress } from "@/components/reading-progress";
 import { SiteHeader } from "@/components/site-header";
 import { SiteMotion } from "@/components/site-motion";
+import { I18nProvider } from "@/components/i18n-provider";
 import { siteConfig, withBasePath } from "@/lib/site";
 import "./globals.css";
 
@@ -59,11 +60,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
-        <ReadingProgress />
-        <SiteMotion />
-        <SiteHeader />
-        {children}
-        <BackToTop />
+        <I18nProvider>
+          <ReadingProgress />
+          <SiteMotion />
+          <SiteHeader />
+          {children}
+          <BackToTop />
+        </I18nProvider>
       </body>
     </html>
   );

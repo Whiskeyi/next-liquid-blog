@@ -47,6 +47,16 @@ lib/site.ts
 
 当你克隆这个模板创建新博客时，这里通常是第一个需要修改的地方。它控制全局品牌、顶部导航、首页、关于页以及可复用的 Hero 图片资源。
 
+## 中英文切换
+
+导航栏的 `EN` / `中` 按钮可以切换界面和文章语言，默认使用简体中文。选择保存在浏览器的 `localStorage`（`locale`）中，刷新、页面跳转及同源标签页之间会保持同步。
+
+界面词典和英文工作经历位于 `lib/i18n.ts`。客户端组件使用 `useI18n()`；服务端页面通过 `LocalizedText`、`LocalizedDate` 等组件显示翻译。日期、数量及无障碍标签也随语言切换。
+
+文章日期使用 `siteConfig.timeZone` 配置的时区（默认 `Asia/Shanghai`），确保静态 HTML 与浏览器显示一致。
+
+全部 18 篇历史文章已提供完整英文版本。标题、摘要、正文、目录及相邻文章随语言切换。两种语言共用网址、日期、标签、分类和媒体资源，继续支持静态导出；构建时的 SEO 元信息保持默认语言。英文版本缺失或处于草稿状态时，会回退显示中文并提示。
+
 ## 命令
 
 使用 Node.js 22，与 GitHub Pages 工作流保持一致。
@@ -63,7 +73,7 @@ pnpm build
 
 ## 从命令行创建文章
 
-使用内置命令可以创建文章目录、`index.md` 和图片目录：
+使用内置命令可以同时创建文章目录、中英文文件、审核快照和图片目录：
 
 ```bash
 pnpm new:post
@@ -72,18 +82,19 @@ pnpm new:post
 交互式命令会询问文章标题和 slug。也可以直接传入参数：
 
 ```bash
-pnpm new:post -- --title "My Post" --slug 2026-07-05-my-post --subtitle "Short summary" --tags React,Next.js --categories Frontend
+pnpm new:post -- --title "我的文章" --title-en "My Post" --slug 2026-07-05-my-post --subtitle "简短介绍" --subtitle-en "Short summary" --tags React,Next.js --categories Frontend
 ```
 
 常用选项：
 
 - `--title`：文章标题
 - `--slug`：`content/posts` 下的目录名
-- `--subtitle`：文章副标题
+- `--subtitle`：中文副标题
+- `--title-en`、`--subtitle-en`：英文标题和副标题（英文初始为草稿）
 - `--tags`：用逗号分隔的标签
 - `--categories`：用逗号分隔的分类
 - `--cover`：文章目录中的封面路径，默认是 `imgs/head.jpg`
-- `--dry-run`：只打印目标路径，不写入文件
+- `--dry-run`：只打印中英文文件路径，不写入文件
 
 ## 内容
 
@@ -91,7 +102,9 @@ pnpm new:post -- --title "My Post" --slug 2026-07-05-my-post --subtitle "Short s
 
 ```text
 content/posts/my-post-slug/
-  index.md
+  index.md          # 简体中文
+  index.en.md       # 英文
+  translations.json # 审核过的双语文件哈希
   imgs/
     head.jpg
     example.png
@@ -99,7 +112,20 @@ content/posts/my-post-slug/
 
 在 Markdown 中使用 `imgs/example.png` 这样的路径，在 frontmatter 中使用 `header-img: imgs/head.jpg`。源图片会和文章放在一起；`pnpm dev` 和 `pnpm build` 会将它们同步到 `public/post-assets`，以便静态导出后可以正常访问。
 
-`pnpm new:post` 会创建 `content/posts/<slug>/index.md` 和 `content/posts/<slug>/imgs/`。在 `index.md` 中写正文，然后把图片复制到 `imgs/`，并用 `imgs/example.png` 这样的相对路径引用。
+`pnpm new:post` 会创建 `index.md`、`index.en.md`、`translations.json` 和 `imgs/`。在两份文件中撰写完整文章；英文模板初始为 `translation-status: draft`，完成翻译并审核后改成 `published`。两份文章引用相同的图片文件。
+
+新增或修改文章时，应在同一次变更中维护中英文版本，保持事实、示例、标题、摘要及章节顺序一致。`AGENTS.md` 同样约束 AI 写作流程。由 AI 直接翻译，未经明确授权不把文章发送到外部翻译服务。
+
+审核两份文章后，记录审核并执行检查：
+
+```bash
+pnpm sync:translations --slug my-post-slug
+pnpm check:translations
+pnpm test:translations
+pnpm build
+```
+
+检查要求每个文章目录都有英文文件；任意一份文件在上次审核后发生变更、共享元信息冲突，或已发布版本的标题层级和顺序不同，都会报错。构建会自动执行这项检查。同步命令只记录文件哈希，不能代替翻译或证明语义一致，因此必须先审核两份文章再记录。
 
 ## 移动端视频
 
@@ -107,7 +133,9 @@ content/posts/my-post-slug/
 
 ```text
 content/posts/my-post-slug/
-  index.md
+  index.md          # 简体中文
+  index.en.md       # 英文
+  translations.json # 审核过的双语文件哈希
   imgs/
     demo-mobile.mp4
     demo-poster.jpg

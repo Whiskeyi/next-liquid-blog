@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/components/i18n-provider";
 import { Minus, Plus, RotateCcw, X } from "lucide-react";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -82,9 +83,10 @@ export function ImageZoomTrigger({
   src,
   alt = "",
   buttonClassName = "article-image-button",
-  buttonLabel = "查看大图",
+  buttonLabel,
   children
 }: ImageZoomTriggerProps) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [transform, setTransform] = useState<ImageTransform>(defaultTransform);
@@ -281,7 +283,7 @@ export function ImageZoomTrigger({
             <button
               className="lightbox-close"
               type="button"
-              aria-label="关闭图片预览"
+              aria-label={t("closeImage")}
               style={lightboxCloseStyle}
               onClick={(event) => {
                 event.stopPropagation();
@@ -296,13 +298,13 @@ export function ImageZoomTrigger({
               onPointerDown={(event) => event.stopPropagation()}
               onWheel={(event) => event.stopPropagation()}
             >
-              <button className="lightbox-control" type="button" aria-label="缩小图片" onClick={() => zoomBy(-SCALE_STEP)}>
+              <button className="lightbox-control" type="button" aria-label={t("zoomOut")} onClick={() => zoomBy(-SCALE_STEP)}>
                 <Minus size={18} />
               </button>
-              <button className="lightbox-control" type="button" aria-label="重置图片" onClick={resetTransform}>
+              <button className="lightbox-control" type="button" aria-label={t("resetImage")} onClick={resetTransform}>
                 <RotateCcw size={17} />
               </button>
-              <button className="lightbox-control" type="button" aria-label="放大图片" onClick={() => zoomBy(SCALE_STEP)}>
+              <button className="lightbox-control" type="button" aria-label={t("zoomIn")} onClick={() => zoomBy(SCALE_STEP)}>
                 <Plus size={18} />
               </button>
             </div>
@@ -325,7 +327,12 @@ export function ImageZoomTrigger({
 
   return (
     <>
-      <button className={buttonClassName} type="button" aria-label={buttonLabel} onClick={() => setOpen(true)}>
+      <button
+        className={buttonClassName}
+        type="button"
+        aria-label={buttonLabel ?? (alt ? t("viewImageAlt", { alt }) : t("viewImage"))}
+        onClick={() => setOpen(true)}
+      >
         {children}
       </button>
       {lightbox}
@@ -344,6 +351,7 @@ export function ImageWithZoom({
   style,
   ...props
 }: ImageWithZoomProps) {
+  const { t } = useI18n();
   const imageRef = useRef<HTMLImageElement | null>(null);
   const [enhanced, setEnhanced] = useState(false);
   const [status, setStatus] = useState<"loading" | "loaded" | "error">("loading");
@@ -393,7 +401,7 @@ export function ImageWithZoom({
   };
 
   return (
-    <ImageZoomTrigger src={src} alt={alt} buttonLabel={alt ? `查看大图：${alt}` : "查看大图"}>
+    <ImageZoomTrigger src={src} alt={alt}>
       <span
         className="article-image-frame"
         data-enhanced={enhanced ? "true" : "false"}
@@ -416,7 +424,7 @@ export function ImageWithZoom({
           onError={handleError}
         />
         <span className="article-image-error" role="status">
-          图片加载失败
+          {t("imageError")}
         </span>
       </span>
     </ImageZoomTrigger>

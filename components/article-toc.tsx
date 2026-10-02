@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/components/i18n-provider";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Heading } from "@/lib/posts";
@@ -10,18 +11,19 @@ type ArticleTocProps = {
 };
 
 export function ArticleToc({ headings }: ArticleTocProps) {
+  const { t } = useI18n();
   const [collapsed, setCollapsed] = useState(false);
 
   if (!headings.length) return null;
 
   return (
-    <aside className="article-toc" data-collapsed={collapsed} style={softGlassStyle} aria-label="文章目录">
+    <aside className="article-toc" data-collapsed={collapsed} style={softGlassStyle} aria-label={t("articleToc")}>
       <div className="toc-head">
-        {collapsed ? null : <div className="toc-title">目录</div>}
+        {collapsed ? null : <div className="toc-title">{t("toc")}</div>}
         <button
           className="toc-toggle"
           type="button"
-          aria-label={collapsed ? "展开目录" : "收起目录"}
+          aria-label={t(collapsed ? "expandToc" : "collapseToc")}
           aria-expanded={!collapsed}
           onClick={() => setCollapsed((current) => !current)}
         >

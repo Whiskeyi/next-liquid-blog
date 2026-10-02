@@ -47,6 +47,16 @@ Common fields to update first:
 
 This is the first place to update when cloning the template for a new blog. It controls the global brand, top navigation, homepage, About page, and reusable hero image assets.
 
+## Language switching
+
+Use the `EN` / `中` button in the navigation to switch the interface and articles between Simplified Chinese (the default) and English. The preference is stored under `locale` in browser `localStorage` and stays in sync across reloads, page navigation, and tabs on the same origin.
+
+Interface messages and the English work timeline live in `lib/i18n.ts`. Client components use `useI18n()`; server pages render translations with `LocalizedText`, `LocalizedDate`, and related components. Dates, counts, and accessibility labels follow the selected language.
+
+The publication time zone is configured by `siteConfig.timeZone` (default: `Asia/Shanghai`), keeping article dates consistent between static HTML and the browser.
+
+All 18 historical articles have full English versions. Titles, summaries, article bodies, contents, and neighboring article links follow the selected language. Both versions share URLs, dates, tags, categories, and media. Static export stays supported; build-time SEO metadata uses the default language. An absent or draft English version falls back to Chinese with a notice.
+
 ## Commands
 
 Use Node.js 22, matching the GitHub Pages workflow.
@@ -63,7 +73,7 @@ pnpm build
 
 ## Create Posts From The Command Line
 
-Use the built-in command to create a post folder, `index.md`, and an image directory:
+Use the built-in command to create a post folder, both language files, a review snapshot, and an image directory:
 
 ```bash
 pnpm new:post
@@ -72,18 +82,19 @@ pnpm new:post
 The interactive command asks for the article title and slug. You can also pass options directly:
 
 ```bash
-pnpm new:post -- --title "My Post" --slug 2026-07-05-my-post --subtitle "Short summary" --tags React,Next.js --categories Frontend
+pnpm new:post -- --title "我的文章" --title-en "My Post" --slug 2026-07-05-my-post --subtitle "简短介绍" --subtitle-en "Short summary" --tags React,Next.js --categories Frontend
 ```
 
 Useful options:
 
 - `--title`: article title
 - `--slug`: folder name under `content/posts`
-- `--subtitle`: article subtitle
+- `--subtitle`: Chinese article subtitle
+- `--title-en`, `--subtitle-en`: English title and subtitle (English starts as a draft)
 - `--tags`: comma-separated tags
 - `--categories`: comma-separated categories
 - `--cover`: cover path in the post folder, defaulting to `imgs/head.jpg`
-- `--dry-run`: print the target path without writing files
+- `--dry-run`: print the paired file paths without writing files
 
 ## Content
 
@@ -91,7 +102,9 @@ Each article lives in its own folder under `content/posts`:
 
 ```text
 content/posts/my-post-slug/
-  index.md
+  index.md          # Simplified Chinese
+  index.en.md       # English
+  translations.json # Hashes of the reviewed pair
   imgs/
     head.jpg
     example.png
@@ -99,7 +112,20 @@ content/posts/my-post-slug/
 
 Use paths like `imgs/example.png` in markdown and `header-img: imgs/head.jpg` in frontmatter. The source images stay beside the article; `pnpm dev` and `pnpm build` sync them to `public/post-assets` so the static export can serve them.
 
-`pnpm new:post` creates `content/posts/<slug>/index.md` and `content/posts/<slug>/imgs/`. Write the article body in `index.md`, then copy images into `imgs/` and reference them with relative paths such as `imgs/example.png`.
+`pnpm new:post` creates `index.md`, `index.en.md`, `translations.json`, and `imgs/`. Write complete articles in both language files. The English template has `translation-status: draft`; change it to `published` after finishing and reviewing the translation. Both versions reference the same image files.
+
+When creating or revising articles, update both versions in the same change, keeping facts, examples, titles, summaries, and section order aligned. `AGENTS.md` also requires this of AI authoring workflows. Translate directly; do not send article content to an external translation service without explicit authorization.
+
+After reviewing the pair, record that review and run the checks:
+
+```bash
+pnpm sync:translations --slug my-post-slug
+pnpm check:translations
+pnpm test:translations
+pnpm build
+```
+
+The checker requires an English file for every article folder. It rejects changes to either file after the last review snapshot, conflicting shared metadata, and differing heading levels/order in published versions. The build runs it automatically. Synchronization records file hashes; it does not translate content or prove semantic equivalence, so review both versions before recording it.
 
 ## Mobile Video
 
@@ -107,7 +133,9 @@ Keep article media close to the post source. Put mobile video assets in the arti
 
 ```text
 content/posts/my-post-slug/
-  index.md
+  index.md          # Simplified Chinese
+  index.en.md       # English
+  translations.json # Hashes of the reviewed pair
   imgs/
     demo-mobile.mp4
     demo-poster.jpg

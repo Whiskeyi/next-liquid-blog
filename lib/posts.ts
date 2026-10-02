@@ -3,6 +3,7 @@ import path from "node:path";
 import matter from "gray-matter";
 import { createHeadingIdRegistry } from "@/lib/heading-ids";
 import { siteConfig, withBasePath } from "@/lib/site";
+import { defaultLocale, type Locale } from "@/lib/i18n";
 
 const POSTS_DIRECTORY = path.join(process.cwd(), "content", "posts");
 const GENERATED_POST_ASSETS_DIRECTORY = "post-assets";
@@ -90,7 +91,11 @@ export type PostMeta = {
   excerpt: string;
   readingMinutes: number;
   wordCount: number;
+  language: Locale;
+  translations?: Partial<Record<Locale, PostTranslationMeta>>;
 };
+
+export type PostTranslationMeta = Pick<PostMeta, "title" | "subtitle" | "excerpt" | "readingMinutes" | "wordCount" | "language">;
 
 export type Post = PostMeta & {
   content: string;
@@ -105,6 +110,7 @@ type RawFrontmatter = {
   categories?: string[] | string;
   "header-img"?: string;
   description?: string;
+  "translation-status"?: "draft" | "published";
 };
 
 type StringListInput = RawFrontmatter["tags"];
@@ -117,7 +123,7 @@ type PostSource = {
 };
 
 type CachedPost = {
-  modifiedTime: number;
+  signature: string;
   post: Post;
 };
 
@@ -177,6 +183,7 @@ function formatDate(date: Date): string {
   if (Number.isNaN(date.getTime())) return "";
 
   return new Intl.DateTimeFormat(DATE_LOCALE, {
+    timeZone: siteConfig.timeZone,
     year: "numeric",
     month: "2-digit",
     day: "2-digit"
@@ -400,9 +407,26 @@ function getCoverImageMeta(src: string | undefined, source: PostSource): CoverIm
   };
 }
 
-function readPost(source: PostSource): Post {
+function translationPath(source: PostSource): string {
+  return source.filePath === path.join(source.directory, POST_INDEX_FILE)
+    ? path.join(source.directory, "index.en.md")
+    : source.filePath.replace(/\.md$/, ".en.md");
+}
+
+function readPost(source: PostSource, locale: Locale = defaultLocale): Post {
   const file = fs.readFileSync(source.filePath, "utf8");
-  const { content: rawContent, data } = matter(file);
+  const original = matter(file);
+  let { content: rawContent, data } = original;
+  let language = defaultLocale;
+  const englishPath = translationPath(source);
+  if (locale === "en" && fs.existsSync(englishPath)) {
+    const english = matter(fs.readFileSync(englishPath, "utf8"));
+    if (english.data["translation-status"] === "published" && english.data.title && english.content.trim()) {
+      rawContent = english.content;
+      data = { ...original.data, title: english.data.title, subtitle: english.data.subtitle, description: english.data.description };
+      language = "en";
+    }
+  }
   const frontmatter = data as RawFrontmatter;
   const slug = source.slug;
   const title = frontmatter.title ?? titleFromSlug(slug);
@@ -429,6 +453,7 @@ function readPost(source: PostSource): Post {
     excerpt: makeExcerpt(content, frontmatter.description),
     readingMinutes: calculateReadingMinutes(content, wordCount),
     wordCount,
+    language,
     content,
     headings: extractHeadings(content)
   };
@@ -466,7 +491,7 @@ function getPostSources(): PostSource[] {
   const entries = fs.readdirSync(POSTS_DIRECTORY, { withFileTypes: true });
 
   entries
-    .filter((entry) => entry.isFile() && entry.name.endsWith(MARKDOWN_EXTENSION))
+    .filter((entry) => entry.isFile() && entry.name.endsWith(MARKDOWN_EXTENSION) && !entry.name.endsWith(".en.md") && entry.name !== "AGENTS.md")
     .forEach((entry) => {
       const source = sourceFromMarkdownFile(entry.name);
       sources.set(source.slug, source);
@@ -494,22 +519,27 @@ export function getPostImageDimensions(src: string, slug: string): ImageDimensio
   return source ? getImageDimensions(src, source) : null;
 }
 
-function getSourceModifiedTime(source: PostSource): number {
-  return fs.statSync(source.filePath).mtimeMs;
+function getSourceSignature(source: PostSource): string {
+  return [source.filePath, translationPath(source)].map((filePath) => {
+    if (!fs.existsSync(filePath)) return "missing";
+    const stat = fs.statSync(filePath);
+    return `${stat.mtimeMs}:${stat.size}`;
+  }).join(":");
 }
 
 function makeSourcesSignature(sources: PostSource[]): string {
-  return sources.map((source) => `${source.cacheKey}:${getSourceModifiedTime(source)}`).join("|");
+  return sources.map((source) => `${source.cacheKey}:${getSourceSignature(source)}`).join("|");
 }
 
-function getCachedPost(source: PostSource): Post {
-  const modifiedTime = getSourceModifiedTime(source);
-  const cached = postCache.get(source.cacheKey);
+function getCachedPost(source: PostSource, locale: Locale = defaultLocale): Post {
+  const signature = getSourceSignature(source);
+  const cacheKey = `${source.cacheKey}:${locale}`;
+  const cached = postCache.get(cacheKey);
 
-  if (cached && cached.modifiedTime === modifiedTime) return cached.post;
+  if (cached && cached.signature === signature) return cached.post;
 
-  const post = readPost(source);
-  postCache.set(source.cacheKey, { modifiedTime, post });
+  const post = readPost(source, locale);
+  postCache.set(cacheKey, { signature, post });
   return post;
 }
 
@@ -520,7 +550,7 @@ function getAllPostRecords(): Post[] {
   if (!allPostsCache || allPostsCache.signature !== signature) {
     allPostsCache = {
       signature,
-      posts: sources.map(getCachedPost).sort((a, b) => Number(new Date(b.date)) - Number(new Date(a.date)))
+      posts: sources.map((source) => getCachedPost(source)).sort((a, b) => Number(new Date(b.date)) - Number(new Date(a.date)))
     };
   }
 
@@ -528,14 +558,19 @@ function getAllPostRecords(): Post[] {
 }
 
 export function getAllPosts(): PostMeta[] {
-  return getAllPostRecords().map(({ content: _content, headings: _headings, ...meta }) => meta);
+  return getAllPostRecords().map(({ content: _content, headings: _headings, ...meta }) => {
+    const english = getPostBySlug(meta.slug, "en");
+    if (!english || english.language !== "en") return meta;
+    const { title, subtitle, excerpt, readingMinutes, wordCount, language } = english;
+    return { ...meta, translations: { en: { title, subtitle, excerpt, readingMinutes, wordCount, language } } };
+  });
 }
 
-export function getPostBySlug(slug: string): Post | null {
+export function getPostBySlug(slug: string, locale: Locale = defaultLocale): Post | null {
   const source = getPostSourceBySlug(slug);
 
   if (!source) return null;
-  return getCachedPost(source);
+  return getCachedPost(source, locale);
 }
 
 export function getAllTags(): { name: string; count: number }[] {

@@ -1,10 +1,12 @@
 "use client";
 
+import { useI18n } from "@/components/i18n-provider";
 import { ArrowUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { softGlassStyle } from "@/components/glass-style";
 
 export function BackToTop() {
+  const { t } = useI18n();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export function BackToTop() {
       className="back-to-top"
       style={softGlassStyle}
       type="button"
-      aria-label="回到顶部"
+      aria-label={t("backToTop")}
       data-visible={visible}
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
     >

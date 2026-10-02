@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import readline from "node:readline";
 import { stdin as input, stdout as output } from "node:process";
+import { writeTranslationSnapshot } from "./post-translations.mjs";
 
 const root = process.cwd();
 const postsDirectory = path.join(root, "content", "posts");
@@ -12,6 +13,7 @@ function parseArgs(argv) {
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
+    if (arg === "--") continue;
 
     if (!arg.startsWith("--")) {
       positional.push(arg);
@@ -96,29 +98,29 @@ function toList(value) {
 
 function renderYamlList(name, items) {
   if (items.length === 0) return `${name}: []`;
-  return [`${name}:`, ...items.map((item) => `  - ${item}`)].join("\n");
+  return [`${name}:`, ...items.map((item) => `  - ${JSON.stringify(item)}`)].join("\n");
 }
 
-function renderTemplate({ title, subtitle, date, tags, categories, cover }) {
+function renderTemplate({ title, subtitle, date, tags, categories, cover, english = false }) {
   return `---
-title: ${title}
-header-img: ${cover}
+title: ${JSON.stringify(title)}
+header-img: ${JSON.stringify(cover)}
 catalog: true
-date: ${date}
-subtitle: ${subtitle}
+date: ${JSON.stringify(date)}
+subtitle: ${JSON.stringify(subtitle)}
 ${renderYamlList("tags", tags)}
 ${renderYamlList("categories", categories)}
----
+${english ? "translation-status: draft\n" : ""}---
 
 # ${title}
 
-在这里开始写正文。
+${english ? "Start writing the English version here. Keep it in sync with index.md." : "在这里开始写正文。请同步维护 index.en.md。"}
 
-## 小节标题
+## ${english ? "Section heading" : "小节标题"}
 
-把文章里的图片放进当前文章目录的 \`imgs\` 文件夹，然后用下面这种相对路径引用：
+${english ? "Put shared images in the article's `imgs` folder and reference them using relative paths:" : "把文章里的图片放进当前文章目录的 `imgs` 文件夹，然后用下面这种相对路径引用："}
 
-![图片描述](imgs/example.png)
+![${english ? "Image description" : "图片描述"}](imgs/example.png)
 `;
 }
 
@@ -156,10 +158,12 @@ Options:
   --title       Article title. Positional text is also accepted.
   --slug        Folder name under content/posts.
   --subtitle    Article subtitle. Defaults to an empty string.
+  --title-en    English title. Defaults to an English draft placeholder.
+  --subtitle-en English subtitle. Defaults to an empty string.
   --tags        Comma-separated tags, for example: React,Next.js
   --categories  Comma-separated categories.
   --cover       Cover path in the post folder. Defaults to imgs/head.jpg.
-  --dry-run     Print the target path without writing files.
+  --dry-run     Print both language paths without writing files.
 `);
 }
 
@@ -178,29 +182,43 @@ async function main() {
   const postDirectory = path.join(postsDirectory, slug);
   const imagesDirectory = path.join(postDirectory, "imgs");
   const indexPath = path.join(postDirectory, "index.md");
+  const englishPath = path.join(postDirectory, "index.en.md");
 
   if (fs.existsSync(postDirectory)) {
     throw new Error(`Post already exists: content/posts/${slug}`);
   }
 
-  const template = renderTemplate({
+  const shared = {
     title,
     subtitle: promptedOptions.subtitle?.trim() || "",
     date: promptedOptions.date?.trim() || formatPostDate(),
     tags: toList(promptedOptions.tags),
     categories: toList(promptedOptions.categories),
     cover: promptedOptions.cover?.trim() || "imgs/head.jpg"
+  };
+  const template = renderTemplate(shared);
+  const englishTemplate = renderTemplate({
+    ...shared,
+    title: promptedOptions["title-en"]?.trim() || "English title",
+    subtitle: promptedOptions["subtitle-en"]?.trim() || "",
+    english: true
   });
 
   if (promptedOptions["dry-run"]) {
     console.log(`Would create: ${path.relative(root, indexPath)}`);
+    console.log(`Would create: ${path.relative(root, englishPath)}`);
+    console.log(`Would create: ${path.relative(root, path.join(postDirectory, "translations.json"))}`);
     return;
   }
 
   fs.mkdirSync(imagesDirectory, { recursive: true });
   fs.writeFileSync(indexPath, template, "utf8");
+  fs.writeFileSync(englishPath, englishTemplate, "utf8");
+  writeTranslationSnapshot(postDirectory);
 
   console.log(`Created ${path.relative(root, indexPath)}`);
+  console.log(`Created ${path.relative(root, englishPath)} (draft)`);
+  console.log("After writing/reviewing both versions, set translation-status: published and run sync:translations --slug " + slug);
   console.log(`Add images to ${path.relative(root, imagesDirectory)}`);
 }
 

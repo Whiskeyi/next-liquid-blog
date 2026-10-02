@@ -29,6 +29,7 @@ type SiteConfig = {
   url: string;
   locale: string;
   language: string;
+  timeZone: string;
   navigation: NavigationItem[];
   links: {
     github: string;
@@ -62,10 +63,11 @@ export const siteConfig = {
   name: "Whiskeyi's Blog",
   title: "Whiskeyi's Blog",
   author: "Whiskeyi",
-  description: "前端工程、React、JavaScript 与系统化学习笔记。",
+  description: "全栈开发、AI 应用与 Agent 工程实践。",
   url: process.env.NEXT_PUBLIC_SITE_URL || DEFAULT_SITE_URL,
   locale: "zh_CN",
   language: "zh-CN",
+  timeZone: "Asia/Shanghai",
   navigation: [
     { href: "/", label: "首页" },
     { href: "/archive", label: "归档" },
@@ -77,11 +79,11 @@ export const siteConfig = {
     email: "zhuchjie@gmail.com"
   },
   home: {
-    heroEyebrow: "Frontend / React / JavaScript",
+    heroEyebrow: "Full-stack / AI / Agent",
     heroTitle: "Whiskeyi's Blog",
     feedEyebrowSuffix: "篇文章",
-    feedTitle: "Latest Notes",
-    feedDescription: "围绕前端工程、React、JavaScript 与系统化学习整理的长期笔记。",
+    feedTitle: "最新笔记",
+    feedDescription: "记录全栈开发、AI 应用与 Agent 构建中的实践、思考与系统化学习。",
     heroImages: [
       { src: "/img/header_img/blue-wave.jpg", width: 1600, height: 1066 },
       { src: "/img/header_img/star-trails.jpg", width: 3182, height: 1640 },
@@ -96,17 +98,17 @@ export const siteConfig = {
   },
   about: {
     title: "关于",
-    eyebrow: "About",
+    eyebrow: "关于",
     heading: "Whiskeyi",
     heroImage: "/img/about/avatar.jpg",
-    profileNote: "Keep learning. :)",
+    profileNote: "持续学习。:)",
     profileReadme: [
       {
-        label: "Focus",
-        value: "AI and Full-Stack"
+        label: "方向",
+        value: "AI 与全栈开发"
       }
     ],
-    timelineEyebrow: "Work Timeline",
+    timelineEyebrow: "工作经历",
     timelineTitle: "工作经历",
     timeline: [
       {

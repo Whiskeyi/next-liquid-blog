@@ -1,8 +1,10 @@
+import { PostTitle } from "@/components/localized-content";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { HeroCarousel } from "@/components/hero-carousel";
 import { HomeMotion } from "@/components/home-motion";
 import { PostFeed } from "@/components/post-feed";
+import { LocalizedRegion, LocalizedText } from "@/components/localized";
 import { getAllPosts, getAllTags } from "@/lib/posts";
 import { siteConfig } from "@/lib/site";
 
@@ -17,20 +19,20 @@ export default function HomePage() {
         <HomeMotion />
         <div className="hero-content">
           <div className="hero-grid">
-            <figure className="hero-visual" aria-label="抽象玻璃建筑主视觉">
+            <LocalizedRegion as="figure" className="hero-visual" label="heroVisual">
               <HeroCarousel images={siteConfig.home.heroImages} />
               <div className="hero-copy">
                 <span>{siteConfig.home.heroEyebrow}</span>
                 <h1>{siteConfig.home.heroTitle}</h1>
-                <p>{siteConfig.description}</p>
+                <p><LocalizedText id="description" /></p>
                 {latest ? (
                   <Link className="hero-link" href={`/blog/${latest.slug}`}>
-                    {latest.title}
+                    <PostTitle post={latest} />
                     <ArrowUpRight size={18} />
                   </Link>
                 ) : null}
               </div>
-            </figure>
+            </LocalizedRegion>
           </div>
         </div>
       </section>
@@ -38,10 +40,10 @@ export default function HomePage() {
       <div className="page-shell">
         <section className="section-heading" aria-labelledby="latest-posts">
           <span>
-            {posts.length} {siteConfig.home.feedEyebrowSuffix}
+            <LocalizedText id="postsCount" values={{ count: posts.length }} />
           </span>
-          <h2 id="latest-posts">{siteConfig.home.feedTitle}</h2>
-          <p>{siteConfig.home.feedDescription}</p>
+          <h2 id="latest-posts"><LocalizedText id="latestNotes" /></h2>
+          <p><LocalizedText id="feedDescription" /></p>
         </section>
         <PostFeed posts={posts} tags={tags} />
       </div>

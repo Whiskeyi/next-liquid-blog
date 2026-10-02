@@ -234,3 +234,9 @@
 .icon-button:active {
   transform: scale(0.96);
 }
+
+.language-toggle {
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+  font-weight: 750;
+}

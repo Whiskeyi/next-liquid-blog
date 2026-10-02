@@ -1,5 +1,7 @@
 "use client";
 
+import { localizePost } from "@/lib/post-localization";
+import { useI18n } from "@/components/i18n-provider";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -8,7 +10,6 @@ import type { PostMeta } from "@/lib/posts";
 import { PostCard } from "@/components/post-card";
 import { getShortcutIndex } from "@/lib/shortcuts";
 
-const ALL_TAG_LABEL = "全部";
 const INITIAL_POST_COUNT = 12;
 const POSTS_PER_BATCH = 6;
 const LOAD_MORE_DELAY_MS = 260;
@@ -58,9 +59,10 @@ type PostFeedProps = {
 };
 
 export function PostFeed({ posts, tags }: PostFeedProps) {
+  const { t } = useI18n();
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [activeTag, setActiveTag] = useState(ALL_TAG_LABEL);
+  const [activeTag, setActiveTag] = useState<string | null>(null);
   const [columnCount, setColumnCount] = useState(DEFAULT_COLUMN_COUNT);
   const [modifierDown, setModifierDown] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_POST_COUNT);
@@ -83,12 +85,13 @@ export function PostFeed({ posts, tags }: PostFeedProps) {
   const filteredPosts = useMemo(() => {
     const keyword = query.trim().toLowerCase();
     return posts.filter((post) => {
+      const english = localizePost(post, "en");
       const tagsText = [...post.tags, ...post.categories].join(" ");
       const matchesQuery =
         !keyword ||
-        `${post.title} ${post.subtitle} ${post.excerpt} ${tagsText}`.toLowerCase().includes(keyword);
+        `${post.title} ${post.subtitle} ${post.excerpt} ${english.title} ${english.subtitle} ${english.excerpt} ${tagsText}`.toLowerCase().includes(keyword);
       const matchesTag =
-        activeTag === ALL_TAG_LABEL || post.tags.includes(activeTag) || post.categories.includes(activeTag);
+        activeTag === null || post.tags.includes(activeTag) || post.categories.includes(activeTag);
       return matchesQuery && matchesTag;
     });
   }, [activeTag, posts, query]);
@@ -207,7 +210,7 @@ export function PostFeed({ posts, tags }: PostFeedProps) {
   }, [columnCount, visiblePosts]);
 
   return (
-    <section ref={feedRef} className="feed-section" aria-label="文章列表">
+    <section ref={feedRef} className="feed-section" aria-label={t("postList")}>
       <div className="feed-toolbar" style={glassStyle}>
         <label className="search-box">
           <Search size={18} />
@@ -215,26 +218,27 @@ export function PostFeed({ posts, tags }: PostFeedProps) {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             type="search"
-            placeholder="搜索文章、标签或摘要"
+            placeholder={t("searchPosts")}
+            aria-label={t("searchPosts")}
           />
         </label>
         <div className="filter-label">
           <SlidersHorizontal size={17} />
-          {filteredPosts.length} 篇
+          {t("postsCount", { count: filteredPosts.length })}
         </div>
       </div>
 
-      <div className="tag-filter" aria-label="标签筛选">
-        {[ALL_TAG_LABEL, ...tags.map((tag) => tag.name)].map((tag) => (
+      <div className="tag-filter" aria-label={t("filterTags")}>
+        {[null, ...tags.map((tag) => tag.name)].map((tag) => (
           <button
-            key={tag}
+            key={tag ?? "all-tags"}
             className="chip"
             type="button"
             data-active={activeTag === tag}
             onClick={() => setActiveTag(tag)}
           >
-            {tag}
-            {tag !== ALL_TAG_LABEL ? <span>{tags.find((item) => item.name === tag)?.count}</span> : null}
+            {tag === null ? t("allTags") : tag}
+            {tag !== null ? <span>{tags.find((item) => item.name === tag)?.count}</span> : null}
           </button>
         ))}
       </div>

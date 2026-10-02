@@ -6,6 +6,7 @@ import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import { CodeBlock } from "@/components/code-block";
 import { ImageWithZoom } from "@/components/image-with-zoom";
+import { HeadingAnchor } from "@/components/localized";
 import { createHeadingIdRegistry } from "@/lib/heading-ids";
 import { getPostImageDimensions, normalizeAssetPath } from "@/lib/posts";
 import { normalizeSiteHref } from "@/lib/site";
@@ -164,8 +165,7 @@ export async function MarkdownRenderer({ content, slug }: MarkdownRendererProps)
             {
               behavior: "append",
               properties: {
-                className: ["heading-anchor"],
-                ariaLabel: "复制标题链接"
+                className: ["heading-anchor"]
               },
               content: {
                 type: "text",
@@ -182,7 +182,10 @@ export async function MarkdownRenderer({ content, slug }: MarkdownRendererProps)
           ]
         ]}
         components={{
-          a({ href = "", children, ...props }) {
+          a({ href = "", children, node: _node, ...props }) {
+            if (props.className?.split(" ").includes("heading-anchor")) {
+              return <HeadingAnchor href={href} {...props}>{children}</HeadingAnchor>;
+            }
             const normalizedHref = normalizeSiteHref(href);
             const external = normalizedHref.startsWith("http://") || normalizedHref.startsWith("https://");
             return (

@@ -1,6 +1,8 @@
+import { PostTitle } from "@/components/localized-content";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { getArchiveGroups } from "@/lib/posts";
+import { LocalizedPageTitle, LocalizedText } from "@/components/localized";
 
 export const metadata = {
   title: "归档",
@@ -14,17 +16,18 @@ export default function ArchivePage() {
 
   return (
     <main className="page-shell inner-page archive-page">
+      <LocalizedPageTitle id="archive" />
       <section className="section-heading">
         <span>Archive</span>
-        <h1>归档</h1>
-        <p>按年份整理的技术笔记索引。</p>
+        <h1><LocalizedText id="archive" /></h1>
+        <p><LocalizedText id="archiveDescription" /></p>
       </section>
 
       <div className="archive-overview">
         <strong>{total}</strong>
-        <span>notes across</span>
+        <span><LocalizedText id="archiveNotesAcross" /></span>
         <strong>{years.length}</strong>
-        <span>years</span>
+        <span><LocalizedText id="years" /></span>
       </div>
 
       <div className="archive-list">
@@ -32,15 +35,15 @@ export default function ArchivePage() {
           <section className="archive-year" key={year}>
             <div className="archive-year-label">
               <h2>{year}</h2>
-              <span>{groups[year].length} 篇</span>
+              <span><LocalizedText id="postsCount" values={{ count: groups[year].length }} /></span>
             </div>
             <div className="archive-items">
               {groups[year].map((post, index) => (
                 <Link className="archive-item" href={`/blog/${post.slug}`} key={post.slug}>
                   <time>{post.displayDate.slice(5)}</time>
                   <div>
-                    <strong>{post.title}</strong>
-                    <span>{[...post.categories, ...post.tags].slice(0, 2).join(" / ") || "Note"}</span>
+                    <strong><PostTitle post={post} /></strong>
+                    <span>{[...post.categories, ...post.tags].slice(0, 2).join(" / ") || <LocalizedText id="note" />}</span>
                   </div>
                   <em>{String(index + 1).padStart(2, "0")}</em>
                   <ArrowUpRight size={17} />

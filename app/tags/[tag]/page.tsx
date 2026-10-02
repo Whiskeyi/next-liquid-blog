@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { PostCard } from "@/components/post-card";
+import { LocalizedPageTitle, LocalizedText } from "@/components/localized";
 import { getAllTags, getPostsByTag } from "@/lib/posts";
 
 type PageProps = {
@@ -29,14 +30,15 @@ export default async function TagPage({ params }: PageProps) {
 
   return (
     <main className="page-shell inner-page">
+      <LocalizedPageTitle id="tagTitle" values={{ name }} />
       <Link className="back-link dark" href="/">
         <ArrowLeft size={17} />
-        返回首页
+        <LocalizedText id="backHome" />
       </Link>
       <section className="section-heading">
-        <span>Tag</span>
+        <span><LocalizedText id="tag" /></span>
         <h1>{name}</h1>
-        <p>共 {posts.length} 篇相关文章。</p>
+        <p><LocalizedText id="relatedPosts" values={{ count: posts.length }} /></p>
       </section>
       <div className="post-grid compact">
         {posts.map((post, index) => (

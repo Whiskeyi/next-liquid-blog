@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/components/i18n-provider";
 import { ArrowUp, ListTree, Minus, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Heading } from "@/lib/posts";
@@ -24,6 +25,7 @@ type ArticleReadingToolsProps = {
 };
 
 export function ArticleReadingTools({ headings }: ArticleReadingToolsProps) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [fontScale, setFontScale] = useState<number>(READER_FONT_SCALE.default);
 
@@ -150,13 +152,13 @@ export function ArticleReadingTools({ headings }: ArticleReadingToolsProps) {
   if (!headings.length) {
     return (
       <div className="mobile-reader-bar">
-        <button type="button" onClick={() => changeFont(-READER_FONT_SCALE.step)} aria-label="缩小字号">
+        <button type="button" onClick={() => changeFont(-READER_FONT_SCALE.step)} aria-label={t("decreaseFont")}>
           <Minus size={READER_BAR_ICON_SIZE} />
         </button>
-        <button type="button" onClick={() => changeFont(READER_FONT_SCALE.step)} aria-label="放大字号">
+        <button type="button" onClick={() => changeFont(READER_FONT_SCALE.step)} aria-label={t("increaseFont")}>
           <Plus size={READER_BAR_ICON_SIZE} />
         </button>
-        <button type="button" onClick={scrollTop} aria-label="回到顶部">
+        <button type="button" onClick={scrollTop} aria-label={t("backToTop")}>
           <ArrowUp size={READER_BAR_ICON_SIZE} />
         </button>
       </div>
@@ -166,16 +168,16 @@ export function ArticleReadingTools({ headings }: ArticleReadingToolsProps) {
   return (
     <>
       <div className="mobile-reader-bar">
-        <button type="button" onClick={() => setOpen(true)} aria-label="打开目录">
+        <button type="button" onClick={() => setOpen(true)} aria-label={t("openToc")}>
           <ListTree size={READER_BAR_ICON_SIZE} />
         </button>
-        <button type="button" onClick={() => changeFont(-READER_FONT_SCALE.step)} aria-label="缩小字号">
+        <button type="button" onClick={() => changeFont(-READER_FONT_SCALE.step)} aria-label={t("decreaseFont")}>
           <Minus size={READER_BAR_ICON_SIZE} />
         </button>
-        <button type="button" onClick={() => changeFont(READER_FONT_SCALE.step)} aria-label="放大字号">
+        <button type="button" onClick={() => changeFont(READER_FONT_SCALE.step)} aria-label={t("increaseFont")}>
           <Plus size={READER_BAR_ICON_SIZE} />
         </button>
-        <button type="button" onClick={scrollTop} aria-label="回到顶部">
+        <button type="button" onClick={scrollTop} aria-label={t("backToTop")}>
           <ArrowUp size={READER_BAR_ICON_SIZE} />
         </button>
       </div>
@@ -187,11 +189,11 @@ export function ArticleReadingTools({ headings }: ArticleReadingToolsProps) {
         role="dialog"
         aria-modal="true"
         aria-hidden={!open}
-        aria-label="移动端文章目录"
+        aria-label={t("mobileToc")}
       >
         <div className="mobile-toc-head">
-          <span>目录</span>
-          <button type="button" onClick={() => setOpen(false)} aria-label="关闭目录">
+          <span>{t("toc")}</span>
+          <button type="button" onClick={() => setOpen(false)} aria-label={t("closeToc")}>
             <X size={CLOSE_ICON_SIZE} />
           </button>
         </div>

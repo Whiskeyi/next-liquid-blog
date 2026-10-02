@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/components/i18n-provider";
 import { useEffect, useRef, useState } from "react";
 import type { PointerEvent } from "react";
 import { flushSync } from "react-dom";
@@ -48,6 +49,7 @@ function prefersReducedMotion() {
 }
 
 export function HeroCarousel({ images }: HeroCarouselProps) {
+  const { t } = useI18n();
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const parallaxFrameRef = useRef<number | null>(null);
   const dragAnimationFrameRef = useRef<number | null>(null);
@@ -376,7 +378,7 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
     <div
       ref={carouselRef}
       className="hero-carousel"
-      aria-label="首页主视觉轮播图"
+      aria-label={t("heroCarousel")}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -418,7 +420,7 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
           <button
             key={image.src}
             type="button"
-            aria-label={`切换到第 ${index + 1} 张轮播图`}
+            aria-label={t("goToSlide", { count: index + 1 })}
             aria-current={index === activeIndex}
             data-active={index === activeIndex}
             onClick={() => selectSlide(index)}

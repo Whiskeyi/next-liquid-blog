@@ -1,5 +1,8 @@
 "use client";
 
+import { localizePost } from "@/lib/post-localization";
+import { formatDate } from "@/lib/i18n";
+import { useI18n } from "@/components/i18n-provider";
 import Link from "next/link";
 import { Command } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -23,7 +26,9 @@ type PostCardProps = {
   shortcutActive?: boolean;
 };
 
-export function PostCard({ post, index = 0, shortcutActive = false }: PostCardProps) {
+export function PostCard({ post: originalPost, index = 0, shortcutActive = false }: PostCardProps) {
+  const { locale, t } = useI18n();
+  const post = localizePost(originalPost, locale);
   const router = useRouter();
   const imageRef = useRef<HTMLImageElement | null>(null);
   const [imageStatus, setImageStatus] = useState<"loading" | "loaded" | "error">("loading");
@@ -32,7 +37,7 @@ export function PostCard({ post, index = 0, shortcutActive = false }: PostCardPr
   const labels = Array.from(new Set([...post.categories, ...post.tags]));
   const href = `/blog/${post.slug}`;
   const shortcutLabel = getShortcutLabel(index);
-  const leadLabel = labels[0] ?? "Note";
+  const leadLabel = labels[0] ?? t("note");
   const cardStyle = glassStyle as CSSProperties;
   const mediaStyle = { "--cover-aspect-ratio": post.coverAspectRatio } as CSSProperties;
   const cardClassName = [
@@ -101,7 +106,7 @@ export function PostCard({ post, index = 0, shortcutActive = false }: PostCardPr
       style={cardStyle}
       role="link"
       tabIndex={0}
-      aria-label={`阅读 ${post.title}`}
+      aria-label={t("readPost", { title: post.title })}
       data-pending={pending}
       onClick={openPost}
       onKeyDown={handleKeyDown}
@@ -125,7 +130,7 @@ export function PostCard({ post, index = 0, shortcutActive = false }: PostCardPr
             fetchPriority="auto"
             decoding="async"
           />
-          {imageStatus === "error" ? <span className="post-card-image-error">封面暂时无法显示</span> : null}
+          {imageStatus === "error" ? <span className="post-card-image-error">{t("coverError")}</span> : null}
           <div className="post-card-media-shade" />
           <div className="post-index">{shortcut}</div>
         </div>
@@ -141,7 +146,7 @@ export function PostCard({ post, index = 0, shortcutActive = false }: PostCardPr
         ) : (
           <div className="post-card-kicker">
             <span>{leadLabel}</span>
-            <span>{post.readingMinutes} 分钟</span>
+            <span>{t("readingMinutes", { count: post.readingMinutes })}</span>
           </div>
         )}
         <h2>
@@ -151,7 +156,7 @@ export function PostCard({ post, index = 0, shortcutActive = false }: PostCardPr
         </h2>
         <p>{post.excerpt}</p>
         <div className="post-card-footer">
-          <time dateTime={post.date}>{post.displayDate}</time>
+          <time dateTime={post.date}>{formatDate(post.date, locale)}</time>
           <div className="chip-row">
             {labels.slice(visibleLabelStart, visibleLabelEnd).map((tag) => (
               <Link className="chip" href={`/tags/${encodeURIComponent(tag)}`} key={`${post.slug}-${tag}`}>
